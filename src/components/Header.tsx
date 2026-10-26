@@ -10,7 +10,7 @@ export function Header() {
         <div className="brand"><span className="mark" />Acervo</div>
         <span className="today">{todayLabel}</span>
         <button id="gear" className={`icon-btn add ${tab === 'backup' ? 'on' : ''}`} onClick={() => setTab('backup')} aria-label="Conta e dados"><Settings className="i" aria-hidden /></button>
-        <button className="btn primary" onClick={() => openEditor(null)} aria-label="Adicionar item"><Plus className="i" aria-hidden />Adicionar</button>
+        <button className="btn primary" onClick={() => openEditor(null)} aria-label="Adicionar item"><Plus className="i" aria-hidden /><span className="lbl">Adicionar</span></button>
       </div>
     </header>
   );

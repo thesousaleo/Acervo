@@ -4,6 +4,8 @@ import { Capacitor } from '@capacitor/core';
 export async function initNative() {
   if (!Capacitor.isNativePlatform()) return;
   document.documentElement.classList.add('native', `native-${Capacitor.getPlatform()}`);
+  // No app, a tela não deve dar zoom com toque duplo ou pinça (no site o zoom continua livre).
+  document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
   try {
     const { StatusBar, Style } = await import('@capacitor/status-bar');
     await StatusBar.setOverlaysWebView({ overlay: true });

@@ -81,7 +81,7 @@ function Sheet({ id, status }: { id: string | null; status?: Status }) {
         <div className="grab" />
         <header className="sh-h">
           <h2 id="m-title">{isNew ? 'Novo item' : 'Editar item'}</h2>
-          {!showSearch && <button className="btn ghost" onClick={() => setShowSearch(true)}><Search className="i" aria-hidden />Buscar dados</button>}
+          {!showSearch && <button className="btn ghost" onClick={() => setShowSearch(true)} aria-label="Buscar dados online"><Search className="i" aria-hidden /><span className="hide-sm">Buscar dados</span></button>}
           <button className="icon-btn" onClick={closeEditor} aria-label="Fechar"><X className="i" aria-hidden /></button>
         </header>
         <div className="sh-b">
@@ -186,7 +186,7 @@ function Sheet({ id, status }: { id: string | null; status?: Status }) {
             : <button className="btn ghost" onClick={() => setConfirmDel(true)} aria-label="Excluir"><Trash2 className="i" aria-hidden /><span className="hide-sm">Excluir</span></button>)}
           {!isNew && <button className="btn ghost" onClick={share} aria-label="Compartilhar como imagem"><Share2 className="i" aria-hidden /><span className="hide-sm">Compartilhar</span></button>}
           <span className="sp" />
-          <button className="btn" onClick={closeEditor}>Cancelar</button>
+          <button className="btn btn-cancel" onClick={closeEditor}>Cancelar</button>
           <button className="btn primary lg" onClick={save}><Check className="i" aria-hidden />{isNew ? 'Adicionar' : 'Salvar'}</button>
         </footer>
       </motion.div>

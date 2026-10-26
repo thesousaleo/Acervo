@@ -40,6 +40,7 @@ jobs:
           npx cap add android
           npx capacitor-assets generate --android --splashBackgroundColor '#06080F'
           npx cap sync android
+          cp native/android/MainActivity.java "$(find android/app/src/main/java -name MainActivity.java)"
 
       - name: Versão do app
         run: |

@@ -598,3 +598,44 @@ select.plain.big{font:800 40px var(--f-display);color:var(--fg);letter-spacing:-
 .selects{flex-wrap:wrap;min-width:0;max-width:100%;gap:6px 14px}
 select.plain{max-width:100%;min-width:0}
 @media (max-width:640px){.selects{flex-basis:100%}}
+
+/* ================= v6: nada maior que a tela no celular ================= */
+/* rede de segurança: o que passar da largura é cortado, sem a página "crescer" para o lado */
+.app{overflow-x:clip}
+.wrap,main{min-width:0;max-width:100%}
+/* títulos e textos longos quebram em vez de empurrar a tela */
+.hero-t,.u-title,.cont-t,.r-tx b,.d-t,.p-t,.pick-res h3,.sh-h h2,.ld-f,.greet,.hit-tx b,.panel p,.m-note{overflow-wrap:anywhere}
+.sh{flex-wrap:wrap;row-gap:6px}
+.sh::after{min-width:24px}
+/* avisos: quebram linha e nunca passam da tela */
+.toast{white-space:normal;max-width:calc(100vw - 32px);width:max-content;text-align:left;line-height:1.35}
+.toast-a{flex:none}
+/* alternância de visão do diário e da conta */
+.seg2{display:flex;max-width:100%;width:fit-content}
+.seg2 button{flex:1 1 auto;min-width:0;text-align:center;white-space:normal;line-height:1.25}
+/* janela de edição */
+.sh-h{min-width:0}
+.sh-h h2{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-h .btn{flex:none}
+.sh-f{flex-wrap:wrap;row-gap:8px}
+@media (max-width:480px){
+  .sh-h .btn span.hide-sm{display:none}
+  .sh-f .btn-cancel{display:none}
+  .sh-b{padding-inline:16px}
+  .sh-h{padding-inline:16px 12px}
+}
+/* cabeçalho: o botão Adicionar vira só ícone em telas bem estreitas */
+@media (max-width:360px){
+  .top-in .btn.primary .lbl{display:none}
+  .top-in .btn.primary{padding:9px 11px}
+}
+/* blocos que podem ficar apertados */
+.hero{min-width:0}
+.hero-tx{min-width:0}
+.pick-res>div{min-width:0}
+.goals li,.g-top{min-width:0}
+.g-top span:first-child{min-width:0;overflow-wrap:anywhere}
+.prov span{min-width:0;overflow-wrap:anywhere}
+.retro-top{flex-wrap:wrap}
+input[type=file].in{min-width:0;max-width:100%;font-size:13px}
+.sh-m{flex-wrap:wrap;white-space:normal;row-gap:2px;line-height:1.3}

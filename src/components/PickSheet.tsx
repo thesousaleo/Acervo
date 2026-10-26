@@ -1,5 +1,6 @@
 import { Dices, Play, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CATS, GROUPS, ORDER, PRI, uniOf } from '../data/catalog';
 import { remaining, statusLabel, sub } from '../lib/progress';
 import { useLibrary, useQuickActions } from '../store/useLibrary';
@@ -34,7 +35,7 @@ export function PickSheet({ onClose }: { onClose: () => void }) {
     return cand[cand.length - 1][0];
   }, [items, area, tempo, seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return (
+  return createPortal(
     <div className="ov">
       <div className="scrim" onClick={onClose} />
       <div className="sheet glass pick" role="dialog" aria-modal="true" aria-labelledby="p-title">
@@ -67,6 +68,7 @@ export function PickSheet({ onClose }: { onClose: () => void }) {
             : <button className="btn primary" onClick={() => { start(pick.id); onClose(); }}><Play className="i" aria-hidden />Começar agora</button>)}
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
