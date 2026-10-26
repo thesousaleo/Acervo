@@ -3,7 +3,7 @@
 Repositório pessoal de **filmes, séries, jogos e livros**, com visual *Liquid Glass*.
 Roda na Web (GitHub Pages) e como app Android (APK via Capacitor).
 
-- **Web:** https://thesousaleo.github.io/acervo/
+- **Web:** https://thesousaleo.github.io/Acervo/
 - **APK:** aba [Releases](../../releases/latest) → baixe `Acervo-x.y.z.apk` no celular e instale.
 
 ## O que tem
