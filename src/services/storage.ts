@@ -1,31 +1,27 @@
-import type { MediaItem, UniversoFiltro } from '../types/media';
+import type { Config, MediaItem } from '../types/media';
 import { exampleId, seed } from '../data/seed';
 
-/**
- * Persistência local (offline-first). Funciona igual na Web e no APK:
- * o WebView do Capacitor guarda o localStorage dentro do app.
- */
+/** Persistência local (offline-first): igual na Web e no APK. */
 const KEY = 'acervo.v1';
-const U_KEY = 'acervo.universo';
-const SB_KEY = 'acervo.supabase';
+const CFG = 'acervo.config';
+const PREFS = 'acervo.prefs';
 
-const read = <T,>(k: string): T | null => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) as T : null; } catch { return null; } };
-const write = (k: string, v: unknown): boolean => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+export const read = <T,>(k: string): T | null => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) as T : null; } catch { return null; } };
+export const write = (k: string, v: unknown): boolean => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+
+export interface Prefs { notifLancamentos: boolean; notifLeitura: boolean; horaLeitura: string; lastRefresh: number }
+const PREFS_DEF: Prefs = { notifLancamentos: true, notifLeitura: false, horaLeitura: '21:00', lastRefresh: 0 };
 
 export const storage = {
   loadItems(): MediaItem[] {
     const p = read<{ items: MediaItem[] }>(KEY);
     if (!p || !Array.isArray(p.items)) return seed();
-    // migração: exemplos antigos (id aleatório) passam a usar id fixo
     const ex = new Set(seed().map(i => i.id));
     return p.items.map(i => { const id = exampleId(i.categoria, i.titulo); return !i.id.startsWith('ex-') && ex.has(id) ? { ...i, id } : i; });
   },
-  saveItems(items: MediaItem[]) { write(KEY, { version: 1, items }); },
-  loadUniverse(): UniversoFiltro {
-    const u = read<string>(U_KEY);
-    return u === 'tela' || u === 'jogos' || u === 'livros' ? u : 'todos';
-  },
-  saveUniverse(u: UniversoFiltro) { write(U_KEY, u); },
-  loadSupabase(): { url: string; key: string } { return read(SB_KEY) || { url: '', key: '' }; },
-  saveSupabase(cfg: { url: string; key: string }) { return write(SB_KEY, cfg); }
+  saveItems(items: MediaItem[]) { write(KEY, { version: 2, items }); },
+  loadConfig(): Config { return read<Config>(CFG) || { metas: [], updatedAt: 0 }; },
+  saveConfig(c: Config) { write(CFG, c); },
+  loadPrefs(): Prefs { return { ...PREFS_DEF, ...(read<Prefs>(PREFS) || {}) }; },
+  savePrefs(p: Prefs) { write(PREFS, p); }
 };

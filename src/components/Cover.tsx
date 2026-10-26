@@ -4,7 +4,7 @@ import { PLAT } from '../data/catalog';
 import { hue } from '../lib/progress';
 import { CAT_ICON } from './icons';
 
-export const shapeOf = (it: MediaItem) => it.categoria === 'livro' ? 'book' : it.categoria === 'jogo' ? 'game' : 'screen';
+export const shapeOf = (it: MediaItem) => (it.categoria === 'livro' || it.categoria === 'hq') ? 'book' : it.categoria === 'jogo' ? 'game' : 'screen';
 
 /** Capa gerada (gradiente + inicial) com formato por universo; usa capaUrl quando existir. */
 export function Cover({ it, size = 'md' }: { it: MediaItem; size?: 'xs' | 'sm' | 'md' }) {
@@ -24,7 +24,7 @@ export function Cover({ it, size = 'md' }: { it: MediaItem; size?: 'xs' | 'sm' |
       <span className="ci"><Icon className="i" aria-hidden /></span>
       {size === 'md' && <span className="ct">{it.titulo}</span>}
       {shape === 'book' && size === 'md' && a.autor && <span className="ca">{a.autor}</span>}
-      {it.capaUrl && !broken && <img src={it.capaUrl} alt="" loading="lazy" onError={() => setBroken(true)} />}
+      {it.capaUrl && !broken && <img src={it.capaUrl} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} />}
     </span>
   );
 }

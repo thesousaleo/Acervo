@@ -1,35 +1,42 @@
-import type { MediaItem } from '../../types/media';
-import type { SyncProvider } from './SyncProvider';
+import type { Config, MediaItem } from '../../types/media';
+import { auth } from '../auth';
+import { SUPABASE_KEY, SUPABASE_URL } from '../supabase';
 
-/**
- * Sincronização via Supabase (REST/PostgREST, sem SDK extra).
- * Tabela esperada (veja README):
- *   create table acervo_items (id text primary key, data jsonb not null, updated_at bigint not null);
- */
-export function supabaseSync(cfg: { url: string; key: string }): SyncProvider {
-  const base = cfg.url.replace(/\/+$/, '') + '/rest/v1/acervo_items';
-  const explain = async (r: Response, what: string) => {
-    const body = await r.text();
-    if (r.status === 404 || /acervo_items/.test(body) && /does not exist|schema cache/.test(body)) return new Error('Tabela acervo_items não encontrada. Rode o SQL do README no Supabase.');
-    if (r.status === 401 || r.status === 403) return new Error('Chave recusada pelo Supabase. Confira a chave e a política da tabela.');
-    return new Error(`Supabase respondeu ${r.status} ao ${what}.`);
-  };
-  // Chaves novas (sb_publishable_…) vão só no header apikey; as antigas (JWT eyJ…) também como Bearer.
-  const headers: Record<string, string> = { apikey: cfg.key, 'Content-Type': 'application/json' };
-  if (cfg.key.startsWith('eyJ')) headers.Authorization = `Bearer ${cfg.key}`;
-  return {
-    name: 'supabase',
-    isConfigured: () => !!(cfg.url && cfg.key),
-    async push(items) {
-      const rows = items.map(i => ({ id: i.id, data: i, updated_at: i.updatedAt || Date.now() }));
-      const r = await fetch(base + '?on_conflict=id', { method: 'POST', headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows) });
-      if (!r.ok) throw await explain(r, 'enviar');
-    },
-    async pull() {
-      const r = await fetch(base + '?select=data', { headers });
-      if (!r.ok) throw await explain(r, 'baixar');
-      const rows: { data: MediaItem }[] = await r.json();
-      return rows.map(x => x.data);
-    }
-  };
+/** Sincronização com o Supabase (REST, com o token do usuário logado). */
+const REST = SUPABASE_URL + '/rest/v1';
+
+async function headers() {
+  const t = await auth.token();
+  if (!t) throw new Error('Entre na sua conta para sincronizar.');
+  return { apikey: SUPABASE_KEY, Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' };
 }
+async function fail(r: Response, what: string) {
+  if (r.status === 401 || r.status === 403) return new Error('Sessão expirada. Entre de novo na sua conta.');
+  return new Error(`Supabase respondeu ${r.status} ao ${what}.`);
+}
+
+export const cloud = {
+  async pull(): Promise<MediaItem[]> {
+    const r = await fetch(`${REST}/acervo_user_items?select=data`, { headers: await headers() });
+    if (!r.ok) throw await fail(r, 'baixar');
+    return (await r.json()).map((x: { data: MediaItem }) => x.data);
+  },
+  async push(items: MediaItem[]) {
+    if (!items.length) return;
+    const rows = items.map(i => ({ id: i.id, data: i, updated_at: i.updatedAt || Date.now() }));
+    for (let i = 0; i < rows.length; i += 200) {
+      const r = await fetch(`${REST}/acervo_user_items?on_conflict=user_id,id`, { method: 'POST', headers: { ...(await headers()), Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows.slice(i, i + 200)) });
+      if (!r.ok) throw await fail(r, 'enviar');
+    }
+  },
+  async pullConfig(): Promise<Config | null> {
+    const r = await fetch(`${REST}/acervo_config?select=data`, { headers: await headers() });
+    if (!r.ok) throw await fail(r, 'baixar configurações');
+    const rows = await r.json();
+    return rows[0]?.data || null;
+  },
+  async pushConfig(c: Config) {
+    const r = await fetch(`${REST}/acervo_config?on_conflict=user_id`, { method: 'POST', headers: { ...(await headers()), Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ data: c, updated_at: c.updatedAt }) });
+    if (!r.ok) throw await fail(r, 'enviar configurações');
+  }
+};

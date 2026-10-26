@@ -8,18 +8,27 @@ Roda na Web (GitHub Pages) e como app Android (APK via Capacitor).
 
 ## O que tem
 
-Um menu só, na parte de baixo: **Início · Filmes/Séries · Jogos · Livros · Diário** (backup na engrenagem do topo).
+Um menu só, na parte de baixo: **Início · Filmes/Séries · Jogos · Livros · Diário** (conta e dados na engrenagem).
 
-- **Início:** destaque do que você mexeu por último, resumo das três áreas, "Continuar" e terminados recentemente.
-- **Filmes/Séries, Jogos e Livros:** números da área, o que está em andamento (atalhos `+1 ep`, `página`, `+1 h` e ✓ concluir na própria capa), **Na fila** (desejos por hype, com `Começar`) e **Estante** com busca, filtros e ordenação.
-- **Diário:** tudo o que foi concluído, mês a mês, com nota, review e rewatches.
-- **Backup:** exportar/importar `.json` e sincronização automática com Supabase.
+- **Tipos:** filmes, séries, animes, jogos, livros e mangás/HQs.
+- **Busca automática** ao cadastrar: capa, ano, diretor/autor, gêneros, páginas, episódios por temporada e tempo médio de jogo
+  (TMDB para filmes e séries, AniList para anime e mangá, Google Livros/Open Library para livros, IGDB para jogos).
+- **Onde assistir** no Brasil (dados do JustWatch via TMDB) e **próximos episódios** de séries e animes, atualizados sozinhos.
+- **Quanto falta:** episódios restantes, horas até a média da história e previsão de término da leitura no seu ritmo.
+- **Atalhos na capa:** `+1 ep`, `página`, `capítulo`, `+1 h` e ✓ concluir; cada um vira uma sessão no histórico, com anotação opcional.
+- **Status:** em andamento, na fila (com hype), pausado, abandonado e concluído; rever/reler/rejogar com datas.
+- **Tags, gêneros e listas** próprias, com filtros na estante.
+- **O que eu faço agora?** sorteia algo da sua lista pelo tempo disponível.
+- **Diário + Retrospectiva:** linha do tempo, números do ano, mês a mês, notas, gêneros favoritos, melhores do ano e **metas anuais**.
+- **Compartilhar como imagem:** review de um item ou a retrospectiva do ano.
+- **Importar** do Letterboxd e do Goodreads (CSV) e backup `.json`.
+- **Conta** (e-mail e senha) com sincronização automática entre aparelhos; **notificações** no Android (episódio novo, lembrete de leitura).
 
-Os dados ficam no próprio aparelho (`localStorage`) e funcionam offline. Web e APK guardam dados separados; use o backup `.json` ou o Supabase para levar de um para o outro.
+Sem conta, tudo funciona offline no aparelho.
 
 ## Stack
 
-React 18 + Vite + TypeScript · Tailwind CSS · Framer Motion · Lucide Icons · Capacitor 7 (Android, Status Bar, Filesystem, Share).
+React 18 + Vite + TypeScript · Tailwind CSS · Framer Motion · Lucide Icons · Capacitor 7 (Android, Status Bar, Filesystem, Share, Local Notifications) · Supabase.
 
 ## Desenvolvimento
 
@@ -67,48 +76,26 @@ Essa chave está no repositório (público) por praticidade. Para usar uma chave
 
 Trocar de chave exige desinstalar o app uma vez (exporte o backup antes).
 
-## Sincronização com Supabase (opcional)
+## Supabase (conta, sincronização e busca)
 
-1. Crie um projeto grátis em supabase.com.
-2. Em **SQL Editor → New query**, cole e rode:
+O app usa o projeto Supabase definido em `src/services/supabase.ts` (URL + chave publicável, que é pública por natureza).
+Os dados ficam protegidos por login e RLS: cada usuário só lê e grava as próprias linhas.
 
-```sql
-create table if not exists acervo_items (
-  id text primary key,
-  data jsonb not null,
-  updated_at bigint not null
-);
-alter table acervo_items enable row level security;
-revoke all on acervo_items from anon, authenticated;
-grant select, insert, update on acervo_items to anon, authenticated;
-create policy "acervo: leitura"   on acervo_items for select to anon, authenticated using (true);
-create policy "acervo: inserir"   on acervo_items for insert to anon, authenticated with check (true);
-create policy "acervo: atualizar" on acervo_items for update to anon, authenticated using (true) with check (true);
-```
-
-3. Em **Project Settings → API Keys**, copie a **Project URL** (`https://xxxx.supabase.co`) e a chave
-   **publishable** (`sb_publishable_…`; projetos antigos mostram a *anon key* `eyJ…`, que também funciona).
-4. No app, aba **Backup → Supabase**, cole as duas e toque em **Salvar e conectar**. Faça o mesmo no outro aparelho.
-
-A partir daí a sincronização é automática: ao abrir o app, ao voltar para ele, quando a internet volta e
-poucos segundos depois de cada alteração. Em conflito vale a edição mais recente de cada item, e exclusões
-também são sincronizadas.
-
-> As políticas acima liberam leitura e escrita (sem apagar linhas) para quem tiver a chave pública. Para um app pessoal é suficiente; não divulgue a chave.
-> Nunca use a chave **secret** / *service_role* no app.
-
-O serviço fica em `src/services/sync/` (`SyncProvider` é a interface; `supabaseSync.ts` a implementação).
+- Tabelas: `acervo_user_items (user_id, id, data, updated_at)` e `acervo_config (user_id, data, updated_at)`.
+- Edge Function `meta` (código em `supabase/functions/meta`): busca no TMDB e no IGDB sem expor as chaves.
+  Segredos necessários em *Edge Functions → Secrets*: `TMDB_TOKEN`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`.
+- AniList, Google Livros e Open Library são chamados direto do app (não precisam de chave).
 
 ## Estrutura
 
 ```
 src/
 ├── App.tsx                 shell: fundo, header, páginas, dock
-├── components/             Cover, Stars, Header, Dock, items/, ItemModal/
+├── components/             Cover, Stars, Header, Dock, Goals, Upcoming, PickSheet, NoteSheet, items/, ItemModal/
 ├── data/                   catalog.ts (categorias, universos, campos) · seed.ts
 ├── lib/                    datas, progresso e estatísticas
-├── pages/                  Inicio, Area (Filmes/Séries, Jogos, Livros), Diario, Backup
-├── services/               storage, backup, platform (nativo), sync/
+├── pages/                  Inicio, Area (Filmes/Séries, Jogos, Livros), Diario, Retrospectiva, Backup (conta e dados)
+├── services/               auth, sync/, meta (busca), importers (CSV), notify, shareImage, storage, backup, platform
 ├── store/useLibrary.tsx    estado global e ações rápidas
 └── styles/liquid.css       design system Liquid Glass
 ```

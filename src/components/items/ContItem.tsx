@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { CATS } from '../../data/catalog';
-import { progress } from '../../lib/progress';
+import { progress, remaining } from '../../lib/progress';
 import { useLibrary, useQuickActions } from '../../store/useLibrary';
 import type { MediaItem } from '../../types/media';
 import { Cover } from '../Cover';
@@ -23,6 +23,7 @@ export function ContItem({ it }: { it: MediaItem }) {
       {p.pct != null ? <div className="line"><i style={{ width: `${p.pct}%` }} /></div> : <div className="line off" />}
       <button className="cont-t" onClick={() => openEditor(it.id)}>{it.titulo}</button>
       <span className="cont-m">{p.l}</span>
+      {remaining(it) && <span className="cont-r">{remaining(it)}</span>}
       <PageEditor it={it} />
     </article>
   );

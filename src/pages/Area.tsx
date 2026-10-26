@@ -1,6 +1,7 @@
 import { Plus, Search } from 'lucide-react';
-import { useState } from 'react';
-import { GROUPS, PRI, uniOf } from '../data/catalog';
+import { useMemo, useState } from 'react';
+import { Upcoming, upcomingOf } from '../components/Upcoming';
+import { CATS, GROUPS, PRI, uniOf } from '../data/catalog';
 import { norm } from '../lib/dates';
 import { byUpd, sub, uStats } from '../lib/progress';
 import { useLibrary } from '../store/useLibrary';
@@ -16,7 +17,7 @@ const SORTS: Record<Sort, (a: MediaItem, b: MediaItem) => number> = {
   conclusao: (a, b) => (b.dataConclusao || '').localeCompare(a.dataConclusao || ''),
   titulo: (a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR')
 };
-const FILTERS: [string, string][] = [['todos', 'Tudo'], ['concluido', 'Concluídos'], ['consumindo', 'Em andamento'], ['pausado', 'Pausados'], ['fav', 'Favoritos']];
+const FILTERS: [string, string][] = [['todos', 'Tudo'], ['concluido', 'Concluídos'], ['consumindo', 'Em andamento'], ['pausado', 'Pausados'], ['abandonado', 'Abandonados'], ['fav', 'Favoritos']];
 
 /** Página de uma área (Filmes & Séries, Jogos ou Livros). */
 export function Area({ u }: { u: Universo }) {
@@ -25,14 +26,21 @@ export function Area({ u }: { u: Universo }) {
   const [f, setF] = useState('todos');
   const [cat, setCat] = useState('todas');
   const [sort, setSort] = useState<Sort>('recentes');
+  const [tag, setTag] = useState('');
+  const [lista, setLista] = useState('');
   const g = GROUPS[u], s = uStats(items, u);
   const L = items.filter(i => uniOf(i) === u);
   const now = L.filter(i => i.status === 'consumindo').sort(byUpd);
   const fila = L.filter(i => i.status === 'wishlist').sort((a, b) => PRI[b.prioridade || 'Médio'] - PRI[a.prioridade || 'Médio'] || a.titulo.localeCompare(b.titulo, 'pt-BR'));
   const shelfAll = L.filter(i => i.status !== 'wishlist');
+  const tags = useMemo(() => [...new Set(L.flatMap(i => [...(i.tags || []), ...(i.generos || [])]))].sort((a, b) => a.localeCompare(b, 'pt-BR')), [L]);
+  const listas = useMemo(() => [...new Set(L.flatMap(i => i.listas || []))].sort(), [L]);
+  const up = upcomingOf(L, 30);
   const nq = norm(q);
   const shelf = shelfAll.filter(it => (f === 'todos' || (f === 'fav' ? it.favorito : it.status === f))
-    && (u !== 'tela' || cat === 'todas' || it.categoria === cat)
+    && (cat === 'todas' || it.categoria === cat)
+    && (!tag || (it.tags || []).includes(tag) || (it.generos || []).includes(tag))
+    && (!lista || (it.listas || []).includes(lista))
     && (!nq || norm(it.titulo + ' ' + sub(it)).includes(nq))).sort(SORTS[sort]);
 
   return (
@@ -48,6 +56,8 @@ export function Area({ u }: { u: Universo }) {
       <h2 className="sh">{s.nowLabel}</h2>
       {now.length ? <div className="strip">{now.map(it => <ContItem key={it.id} it={it} />)}</div> : <p className="quiet">Nada em andamento. Escolha algo da fila abaixo.</p>}
 
+      {up.length > 0 && <><h2 className="sh">Próximos episódios</h2><Upcoming list={up} /></>}
+
       <h2 className="sh">Na fila <span className="n">{fila.length}</span><button className="sh-link" onClick={() => openEditor(null, 'wishlist')}><Plus className="i" aria-hidden />Adicionar</button></h2>
       {fila.length ? <ul className="rows">{fila.map(it => <RowItem key={it.id} it={it} mode="fila" />)}</ul> : <p className="quiet">Sua fila está vazia.</p>}
 
@@ -58,11 +68,13 @@ export function Area({ u }: { u: Universo }) {
           {FILTERS.map(([k, l]) => <button key={k} role="tab" aria-selected={f === k} className={f === k ? 'on' : ''} onClick={() => setF(k)}>{l}</button>)}
         </div>
         <div className="selects">
-          {u === 'tela' && (
+          {g.cats.length > 1 && (
             <select className="plain" value={cat} onChange={e => setCat(e.target.value)} aria-label="Tipo">
-              <option value="todas">Filmes e séries</option><option value="filme">Só filmes</option><option value="serie">Só séries</option>
+              <option value="todas">Todos os tipos</option>{g.cats.map(c => <option key={c} value={c}>Só {CATS[c].plural.toLowerCase()}</option>)}
             </select>
           )}
+          {tags.length > 0 && <select className="plain" value={tag} onChange={e => setTag(e.target.value)} aria-label="Gênero ou tag"><option value="">Gênero / tag</option>{tags.map(t => <option key={t} value={t}>{t}</option>)}</select>}
+          {listas.length > 0 && <select className="plain" value={lista} onChange={e => setLista(e.target.value)} aria-label="Lista"><option value="">Lista</option>{listas.map(t => <option key={t} value={t}>{t}</option>)}</select>}
           <select className="plain" value={sort} onChange={e => setSort(e.target.value as Sort)} aria-label="Ordenar">
             <option value="recentes">Mais recentes</option><option value="nota">Maior nota</option><option value="conclusao">Data de conclusão</option><option value="titulo">Título A–Z</option>
           </select>

@@ -3,6 +3,7 @@ import { Dock } from './components/Dock';
 import { Header } from './components/Header';
 import { ItemModal } from './components/ItemModal/ItemModal';
 import { MeshBackground } from './components/MeshBackground';
+import { NoteSheet } from './components/NoteSheet';
 import { Toast } from './components/Toast';
 import { Area } from './pages/Area';
 import { Backup } from './pages/Backup';
@@ -37,6 +38,7 @@ export default function App() {
       </div>
       <Dock />
       <ItemModal />
+      <NoteSheet />
       <Toast />
     </>
   );

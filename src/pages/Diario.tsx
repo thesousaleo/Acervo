@@ -1,5 +1,6 @@
 import { RotateCcw } from 'lucide-react';
 import { useState } from 'react';
+import { Retrospectiva } from './Retrospectiva';
 import { CATS, GROUPS, ORDER, uniOf } from '../data/catalog';
 import { asDate, cap, yearNow } from '../lib/dates';
 import { useLibrary } from '../store/useLibrary';
@@ -13,6 +14,7 @@ type E = { it: MediaItem; date: string; kind: 'done' | 'rewatch' };
 export function Diario() {
   const { items, openEditor } = useLibrary();
   const [du, setDu] = useState<UniversoFiltro>('todos');
+  const [view, setView] = useState<'linha' | 'retro'>('linha');
   const E: E[] = [];
   items.filter(it => du === 'todos' || uniOf(it) === du).forEach(it => {
     if (it.status === 'concluido' && it.dataConclusao) E.push({ it, date: it.dataConclusao, kind: 'done' });
@@ -26,6 +28,11 @@ export function Diario() {
   return (
     <>
       <header className="u-top"><h1 className="u-title">Diário</h1><p className="greet">{thisYear} {thisYear === 1 ? 'registro' : 'registros'} em {y}.</p></header>
+      <div className="seg2" role="tablist" aria-label="Visão">
+        <button role="tab" aria-selected={view === 'linha'} className={view === 'linha' ? 'on' : ''} onClick={() => setView('linha')}>Linha do tempo</button>
+        <button role="tab" aria-selected={view === 'retro'} className={view === 'retro' ? 'on' : ''} onClick={() => setView('retro')}>Retrospectiva e metas</button>
+      </div>
+      {view === 'retro' ? <Retrospectiva /> : <>
       <div className="tabs" role="tablist">
         {tabs.map(([k, l]) => <button key={k} role="tab" aria-selected={du === k} className={du === k ? 'on' : ''} style={k !== 'todos' ? { ['--uc' as any]: GROUPS[k].color } : undefined} onClick={() => setDu(k)}>{l}</button>)}
       </div>
@@ -58,6 +65,7 @@ export function Diario() {
           </section>
         );
       }) : <p className="quiet">Quando você concluir algo, ele aparece aqui com data, nota e review.</p>}
+      </>}
     </>
   );
 }

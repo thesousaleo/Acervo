@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { CATS } from '../../data/catalog';
-import { hue, progress, sub } from '../../lib/progress';
+import { hue, progress, remaining, sub } from '../../lib/progress';
 import { useLibrary, useQuickActions } from '../../store/useLibrary';
 import type { MediaItem } from '../../types/media';
 import { Cover } from '../Cover';
@@ -21,6 +21,7 @@ export function Hero({ it }: { it: MediaItem }) {
         <p className="hero-m">{sub(it)}</p>
         {p.pct != null && <div className="line"><i style={{ width: `${p.pct}%` }} /></div>}
         <p className="hero-p"><span>{p.l}</span>{p.r && <span>{p.r}</span>}</p>
+        {remaining(it) && <p className="hero-left">{remaining(it)}</p>}
         <div className="hero-a">
           <QuickBtn it={it} className="btn tint" />
           <button className="btn ok" onClick={() => done(it.id)}><Check className="i" aria-hidden />Concluir hoje</button>
