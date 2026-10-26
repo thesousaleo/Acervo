@@ -85,6 +85,10 @@ jobs:
           make_latest: true
           files: Acervo-${{ env.VERSION }}.apk
           body: |
+            🌐 **Versão web:** https://thesousaleo.github.io/Acervo/
+
+            📱 **Android:** baixe o `Acervo-${{ env.VERSION }}.apk` abaixo no celular.
+
             APK do Acervo para Android, gerado automaticamente a partir do commit ${{ github.sha }}.
             Baixe o arquivo `.apk` abaixo no celular e toque para instalar (permita "instalar apps desconhecidos" se o Android pedir).
             Versões novas instalam por cima e mantêm seus dados.
