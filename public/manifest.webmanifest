@@ -1,0 +1,10 @@
+{
+  "name": "Acervo",
+  "short_name": "Acervo",
+  "description": "Filmes, séries, jogos e livros num só lugar.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#06080F",
+  "theme_color": "#06080F",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
+}
