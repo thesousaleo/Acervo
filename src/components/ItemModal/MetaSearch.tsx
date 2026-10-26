@@ -1,36 +1,42 @@
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { meta, type MetaHit } from '../../services/meta';
 import type { Categoria } from '../../types/media';
 
-const SRC: Record<Categoria, string> = { filme: 'TMDB', serie: 'TMDB', anime: 'AniList', livro: 'Google Livros', hq: 'AniList', jogo: 'IGDB' };
+const PH: Record<Categoria, string> = { filme: 'Nome do filme', serie: 'Nome da série', anime: 'Nome do anime', livro: 'Título do livro ou autor', hq: 'Nome do mangá ou HQ', jogo: 'Nome do jogo' };
 
-/** Busca online: escolhe um resultado e preenche capa, dados e onde assistir. */
-export function MetaSearch({ cat, initial, onPick }: { cat: Categoria; initial: string; onPick: (dados: Record<string, any>) => void }) {
+/** Busca online: digita, escolhe um resultado e o item já vem preenchido. */
+export function MetaSearch({ cat, initial, onPick, autoFocus }: { cat: Categoria; initial: string; onPick: (dados: Record<string, any>) => void; autoFocus?: boolean }) {
   const [q, setQ] = useState(initial);
   const [hits, setHits] = useState<MetaHit[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-  const go = async () => {
-    if (!q.trim()) return;
-    setBusy(true); setErr(''); setHits(null);
-    try { setHits(await meta.search(cat, q)); }
-    catch (e: any) { setErr(/não configurad/.test(e.message) ? `A busca de ${SRC[cat]} ainda não está ativada (falta a chave no Supabase). Preencha manualmente por enquanto.` : `Busca indisponível agora: ${e.message}`); }
-    finally { setBusy(false); }
+  const seq = useRef(0);
+
+  const go = async (text = q) => {
+    const t = text.trim(); if (t.length < 2) { setHits(null); return; }
+    const my = ++seq.current;
+    setBusy(true); setErr('');
+    try { const r = await meta.search(cat, t); if (my === seq.current) setHits(r); }
+    catch (e: any) { if (my === seq.current) setErr(/não configurad/.test(e.message) ? 'A busca deste tipo ainda não está ativada. Preencha manualmente.' : 'Busca indisponível agora. Tente de novo ou preencha manualmente.'); }
+    finally { if (my === seq.current) setBusy(false); }
   };
+  // busca enquanto digita (com pequena espera)
+  useEffect(() => { const id = setTimeout(() => go(q), 450); return () => clearTimeout(id); }, [q, cat]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const pick = async (h: MetaHit) => {
     setBusy(true); setErr('');
-    try { onPick(await meta.details(cat, h)); setHits(null); }
-    catch (e: any) { setErr(`Não consegui buscar os detalhes: ${e.message}`); }
-    finally { setBusy(false); }
+    try { onPick(await meta.details(cat, h)); }
+    catch { setErr('Não consegui buscar os detalhes. Tente outro resultado.'); setBusy(false); }
   };
   return (
     <div className="msearch">
-      <div className="msearch-bar">
+      <label className="msearch-bar">
         <Search className="i" aria-hidden />
-        <input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); go(); } }} placeholder={`Buscar no ${SRC[cat]}…`} aria-label="Buscar dados online" autoComplete="off" />
-        <button type="button" className="btn primary" onClick={go} disabled={busy}>{busy ? 'Buscando…' : 'Buscar'}</button>
-      </div>
+        <input value={q} autoFocus={autoFocus} onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); go(); } }}
+          placeholder={PH[cat]} aria-label="Buscar" autoComplete="off" enterKeyHint="search" />
+        {busy && <span className="spin" aria-label="Buscando" />}
+      </label>
       {err && <p className="err">{err}</p>}
       {hits && (hits.length ? (
         <ul className="hits">
@@ -43,7 +49,7 @@ export function MetaSearch({ cat, initial, onPick }: { cat: Categoria; initial: 
             </li>
           ))}
         </ul>
-      ) : <p className="quiet">Nada encontrado. Tente outro nome ou preencha manualmente.</p>)}
+      ) : <p className="quiet">Nada encontrado com esse nome.</p>)}
     </div>
   );
 }
