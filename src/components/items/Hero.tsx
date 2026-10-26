@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { CATS } from '../../data/catalog';
-import { hue, progress, remaining, sub } from '../../lib/progress';
+import { hue, progress, remaining } from '../../lib/progress';
 import { useLibrary, useQuickActions } from '../../store/useLibrary';
 import type { MediaItem } from '../../types/media';
 import { Cover } from '../Cover';
@@ -18,10 +18,8 @@ export function Hero({ it }: { it: MediaItem }) {
       <div className="hero-tx">
         <div className="kicker"><Icon className="i" aria-hidden />{c.verb} agora</div>
         <h2 className="hero-t"><button onClick={() => openEditor(it.id)}>{it.titulo}</button></h2>
-        <p className="hero-m">{sub(it)}</p>
         {p.pct != null && <div className="line"><i style={{ width: `${p.pct}%` }} /></div>}
-        <p className="hero-p"><span>{p.l}</span>{p.r && <span>{p.r}</span>}</p>
-        {remaining(it) && <p className="hero-left">{remaining(it)}</p>}
+        <p className="hero-p">{[p.l, remaining(it)].filter(Boolean).join(' · ')}</p>
         <div className="hero-a">
           <QuickBtn it={it} className="btn tint" />
           <button className="btn ok" onClick={() => done(it.id)}><Check className="i" aria-hidden />Concluir hoje</button>

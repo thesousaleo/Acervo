@@ -27,10 +27,10 @@ export function Diario() {
   const tabs: [UniversoFiltro, string][] = [['todos', 'Tudo'], ...ORDER.map(u => [u, GROUPS[u].label] as [UniversoFiltro, string])];
   return (
     <>
-      <header className="u-top"><h1 className="u-title">Diário</h1><p className="greet">{thisYear} {thisYear === 1 ? 'registro' : 'registros'} em {y}.</p></header>
+      <header className="u-top"><h1 className="u-title">Diário</h1></header>
       <div className="seg2" role="tablist" aria-label="Visão">
         <button role="tab" aria-selected={view === 'linha'} className={view === 'linha' ? 'on' : ''} onClick={() => setView('linha')}>Linha do tempo</button>
-        <button role="tab" aria-selected={view === 'retro'} className={view === 'retro' ? 'on' : ''} onClick={() => setView('retro')}>Retrospectiva e metas</button>
+        <button role="tab" aria-selected={view === 'retro'} className={view === 'retro' ? 'on' : ''} onClick={() => setView('retro')}>Retrospectiva</button>
       </div>
       {view === 'retro' ? <Retrospectiva /> : <>
       <div className="tabs" role="tablist">

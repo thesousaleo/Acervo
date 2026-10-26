@@ -1,4 +1,4 @@
-import { Bell, Download, LogOut, RefreshCw, Trash2, Upload, UserRound } from 'lucide-react';
+import { ArrowLeft, Bell, Download, LogOut, RefreshCw, Trash2, Upload, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { auth } from '../services/auth';
 import { exportFile, ImportError, merge, parseBackup } from '../services/backup';
@@ -88,7 +88,7 @@ function Notificacoes() {
 }
 
 export function Backup() {
-  const { items, setItems, resetSample, toast } = useLibrary();
+  const { items, setItems, resetSample, toast, setTab } = useLibrary();
   const [raw, setRaw] = useState('');
   const [msg, setMsg] = useState('');
   const [confirmReset, setConfirmReset] = useState(false);
@@ -119,7 +119,10 @@ export function Backup() {
 
   return (
     <>
-      <header className="u-top"><h1 className="u-title">Conta e dados</h1></header>
+      <header className="u-top back-top">
+        <button className="round-btn" onClick={() => setTab('inicio')} aria-label="Voltar ao início"><ArrowLeft className="i" aria-hidden /></button>
+        <h1 className="u-title">Conta e dados</h1>
+      </header>
       <div className="panels">
         <Conta />
         <Notificacoes />

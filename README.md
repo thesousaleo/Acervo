@@ -8,7 +8,7 @@ Roda na Web (GitHub Pages) e como app Android (APK via Capacitor).
 
 ## O que tem
 
-Um menu só, na parte de baixo: **Início · Filmes/Séries · Jogos · Livros · Diário** (conta e dados na engrenagem).
+Um menu só, na parte de baixo: **Início · Filmes/Séries · Jogos · Livros · Diário**, com o botão **+** flutuante ao lado para adicionar. Conta e dados ficam no avatar do Início.
 
 - **Tipos:** filmes, séries, animes, jogos, livros e mangás/HQs.
 - **Busca automática** ao cadastrar: capa, ano, diretor/autor, gêneros, páginas, episódios por temporada e tempo médio de jogo
@@ -91,7 +91,7 @@ Os dados ficam protegidos por login e RLS: cada usuário só lê e grava as pró
 ```
 src/
 ├── App.tsx                 shell: fundo, header, páginas, dock
-├── components/             Cover, Stars, Header, Dock, Goals, Upcoming, PickSheet, NoteSheet, items/, ItemModal/
+├── components/             Cover, Stars, Dock (menu + botão +), Goals, Upcoming, PickSheet, NoteSheet, items/, ItemModal/
 ├── data/                   catalog.ts (categorias, universos, campos) · seed.ts
 ├── lib/                    datas, progresso e estatísticas
 ├── pages/                  Inicio, Area (Filmes/Séries, Jogos, Livros), Diario, Retrospectiva, Backup (conta e dados)

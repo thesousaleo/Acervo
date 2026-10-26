@@ -1,9 +1,9 @@
-import { Plus, Search } from 'lucide-react';
+import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Upcoming, upcomingOf } from '../components/Upcoming';
 import { CATS, GROUPS, PRI, uniOf } from '../data/catalog';
 import { norm } from '../lib/dates';
-import { byUpd, sub, uStats } from '../lib/progress';
+import { byUpd, sub } from '../lib/progress';
 import { useLibrary } from '../store/useLibrary';
 import type { MediaItem, Universo } from '../types/media';
 import { ContItem } from '../components/items/ContItem';
@@ -17,70 +17,76 @@ const SORTS: Record<Sort, (a: MediaItem, b: MediaItem) => number> = {
   conclusao: (a, b) => (b.dataConclusao || '').localeCompare(a.dataConclusao || ''),
   titulo: (a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR')
 };
+const SORT_L: Record<Sort, string> = { recentes: 'Recentes', nota: 'Maior nota', conclusao: 'Data de conclusão', titulo: 'A–Z' };
 const FILTERS: [string, string][] = [['todos', 'Tudo'], ['concluido', 'Concluídos'], ['consumindo', 'Em andamento'], ['pausado', 'Pausados'], ['abandonado', 'Abandonados'], ['fav', 'Favoritos']];
+const FILA_VISIVEL = 5;
 
 /** Página de uma área (Filmes & Séries, Jogos ou Livros). */
 export function Area({ u }: { u: Universo }) {
-  const { items, openEditor } = useLibrary();
+  const { items } = useLibrary();
   const [q, setQ] = useState('');
   const [f, setF] = useState('todos');
   const [cat, setCat] = useState('todas');
   const [sort, setSort] = useState<Sort>('recentes');
   const [tag, setTag] = useState('');
   const [lista, setLista] = useState('');
-  const g = GROUPS[u], s = uStats(items, u);
+  const [painel, setPainel] = useState(false);
+  const [filaToda, setFilaToda] = useState(false);
+  const g = GROUPS[u];
   const L = items.filter(i => uniOf(i) === u);
   const now = L.filter(i => i.status === 'consumindo').sort(byUpd);
   const fila = L.filter(i => i.status === 'wishlist').sort((a, b) => PRI[b.prioridade || 'Médio'] - PRI[a.prioridade || 'Médio'] || a.titulo.localeCompare(b.titulo, 'pt-BR'));
   const shelfAll = L.filter(i => i.status !== 'wishlist');
   const tags = useMemo(() => [...new Set(L.flatMap(i => [...(i.tags || []), ...(i.generos || [])]))].sort((a, b) => a.localeCompare(b, 'pt-BR')), [L]);
   const listas = useMemo(() => [...new Set(L.flatMap(i => i.listas || []))].sort(), [L]);
-  const up = upcomingOf(L, 30);
+  const up = upcomingOf(L, 30).slice(0, 4);
   const nq = norm(q);
   const shelf = shelfAll.filter(it => (f === 'todos' || (f === 'fav' ? it.favorito : it.status === f))
     && (cat === 'todas' || it.categoria === cat)
     && (!tag || (it.tags || []).includes(tag) || (it.generos || []).includes(tag))
     && (!lista || (it.listas || []).includes(lista))
     && (!nq || norm(it.titulo + ' ' + sub(it)).includes(nq))).sort(SORTS[sort]);
+  const ativos = [f !== 'todos', cat !== 'todas', !!tag, !!lista, sort !== 'recentes'].filter(Boolean).length;
+  const limpar = () => { setF('todos'); setCat('todas'); setTag(''); setLista(''); setSort('recentes'); };
+  const nowLabel = u === 'tela' ? 'Assistindo' : u === 'jogos' ? 'Jogando' : 'Lendo';
 
   return (
     <>
       <header className="u-top" style={{ ['--uc' as any]: g.color }}>
         <h1 className="u-title">{g.label}</h1>
-        <p className="greet">{g.hello}</p>
-        <dl className="figs">
-          {s.stats.map(([v, unit, l]) => <div key={l}><dt>{l}</dt><dd>{v}{unit && <small>{unit}</small>}</dd></div>)}
-        </dl>
       </header>
 
-      <h2 className="sh">{s.nowLabel}</h2>
-      {now.length ? <div className="strip">{now.map(it => <ContItem key={it.id} it={it} />)}</div> : <p className="quiet">Nada em andamento. Escolha algo da fila abaixo.</p>}
-
+      {now.length > 0 && <><h2 className="sh">{nowLabel} <span className="n">{now.length}</span></h2><div className="strip">{now.map(it => <ContItem key={it.id} it={it} />)}</div></>}
       {up.length > 0 && <><h2 className="sh">Próximos episódios</h2><Upcoming list={up} /></>}
 
-      <h2 className="sh">Na fila <span className="n">{fila.length}</span><button className="sh-link" onClick={() => openEditor(null, 'wishlist')}><Plus className="i" aria-hidden />Adicionar</button></h2>
-      {fila.length ? <ul className="rows">{fila.map(it => <RowItem key={it.id} it={it} mode="fila" />)}</ul> : <p className="quiet">Sua fila está vazia.</p>}
+      {fila.length > 0 && (
+        <>
+          <h2 className="sh">Na fila <span className="n">{fila.length}</span></h2>
+          <ul className="rows">{(filaToda ? fila : fila.slice(0, FILA_VISIVEL)).map(it => <RowItem key={it.id} it={it} mode="fila" />)}</ul>
+          {fila.length > FILA_VISIVEL && <button className="more" onClick={() => setFilaToda(v => !v)}>{filaToda ? 'Mostrar menos' : `Ver toda a fila (${fila.length})`}</button>}
+        </>
+      )}
 
       <h2 className="sh">Estante <span className="n">{shelfAll.length}</span></h2>
-      <div className="tools">
-        <label className="find"><Search className="i" aria-hidden /><input type="search" placeholder={g.search} value={q} onChange={e => setQ(e.target.value)} autoComplete="off" aria-label="Buscar" /></label>
-        <div className="tabs" role="tablist">
-          {FILTERS.map(([k, l]) => <button key={k} role="tab" aria-selected={f === k} className={f === k ? 'on' : ''} onClick={() => setF(k)}>{l}</button>)}
-        </div>
-        <div className="selects">
-          {g.cats.length > 1 && (
-            <select className="plain" value={cat} onChange={e => setCat(e.target.value)} aria-label="Tipo">
-              <option value="todas">Todos os tipos</option>{g.cats.map(c => <option key={c} value={c}>Só {CATS[c].plural.toLowerCase()}</option>)}
-            </select>
-          )}
-          {tags.length > 0 && <select className="plain" value={tag} onChange={e => setTag(e.target.value)} aria-label="Gênero ou tag"><option value="">Gênero / tag</option>{tags.map(t => <option key={t} value={t}>{t}</option>)}</select>}
-          {listas.length > 0 && <select className="plain" value={lista} onChange={e => setLista(e.target.value)} aria-label="Lista"><option value="">Lista</option>{listas.map(t => <option key={t} value={t}>{t}</option>)}</select>}
-          <select className="plain" value={sort} onChange={e => setSort(e.target.value as Sort)} aria-label="Ordenar">
-            <option value="recentes">Mais recentes</option><option value="nota">Maior nota</option><option value="conclusao">Data de conclusão</option><option value="titulo">Título A–Z</option>
-          </select>
-        </div>
+      <div className="tools2">
+        <label className="find"><Search className="i" aria-hidden /><input type="search" placeholder="Buscar" value={q} onChange={e => setQ(e.target.value)} autoComplete="off" aria-label="Buscar na estante" /></label>
+        <button className={`round-btn ${painel || ativos ? 'on' : ''}`} onClick={() => setPainel(p => !p)} aria-expanded={painel} aria-label="Filtros e ordem">
+          <SlidersHorizontal className="i" aria-hidden />{ativos > 0 && <span className="badge">{ativos}</span>}
+        </button>
       </div>
-      {shelf.length ? <div className={`shelf g-${u}`}>{shelf.map(it => <ShelfItem key={it.id} it={it} />)}</div> : <p className="quiet">Nada na estante com esses filtros.</p>}
+      {painel && (
+        <div className="fpanel">
+          <div className="pills">{FILTERS.map(([k, l]) => <button key={k} className={`pill-s ${f === k ? 'on' : ''}`} onClick={() => setF(k)}>{l}</button>)}</div>
+          {g.cats.length > 1 && <div className="pills">{(['todas', ...g.cats] as string[]).map(c => <button key={c} className={`pill-s ${cat === c ? 'on' : ''}`} onClick={() => setCat(c)}>{c === 'todas' ? 'Todos os tipos' : CATS[c as keyof typeof CATS].plural}</button>)}</div>}
+          <div className="fsel">
+            <label><span>Ordem</span><select className="plain" value={sort} onChange={e => setSort(e.target.value as Sort)}>{(Object.keys(SORTS) as Sort[]).map(k => <option key={k} value={k}>{SORT_L[k]}</option>)}</select></label>
+            {tags.length > 0 && <label><span>Gênero/tag</span><select className="plain" value={tag} onChange={e => setTag(e.target.value)}><option value="">Todos</option>{tags.map(t => <option key={t} value={t}>{t}</option>)}</select></label>}
+            {listas.length > 0 && <label><span>Lista</span><select className="plain" value={lista} onChange={e => setLista(e.target.value)}><option value="">Todas</option>{listas.map(t => <option key={t} value={t}>{t}</option>)}</select></label>}
+          </div>
+          {ativos > 0 && <button className="more" onClick={limpar}><X className="i" aria-hidden />Limpar filtros</button>}
+        </div>
+      )}
+      {shelf.length ? <div className={`shelf g-${u}`}>{shelf.map(it => <ShelfItem key={it.id} it={it} />)}</div> : <p className="quiet">{shelfAll.length ? 'Nada com esses filtros.' : 'Sua estante está vazia. Toque em + para adicionar.'}</p>}
     </>
   );
 }

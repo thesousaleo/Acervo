@@ -4,8 +4,8 @@ import { hue } from '../lib/progress';
 import type { MediaItem } from '../types/media';
 
 const W = 1080, H = 1350;
-const FONT_D = '"Bricolage Grotesque", system-ui, sans-serif';
-const FONT_B = 'Manrope, system-ui, sans-serif';
+const FONT_D = '"Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif';
+const FONT_B = '"Manrope Variable", Manrope, system-ui, sans-serif';
 
 function bg(ctx: CanvasRenderingContext2D, color: string) {
   ctx.fillStyle = '#06080F'; ctx.fillRect(0, 0, W, H);

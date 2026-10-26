@@ -13,8 +13,8 @@ html,body,#root{margin:0;min-height:100%}
   --glass-a:rgba(255,255,255,.10); --glass-b:rgba(255,255,255,.03);
   --edge:rgba(255,255,255,.16); --spec:rgba(255,255,255,.25); --fill:rgba(255,255,255,.06);
   --sheet-a:rgba(32,36,64,.78); --sheet-b:rgba(12,14,28,.82); --scrim:rgba(3,4,10,.55); --opt:#0E1220;
-  --f-display:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --f-body:"Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-display:"Bricolage Grotesque Variable", "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --f-body:"Manrope Variable", "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --r-lg:26px; --r-md:18px; --r-sm:12px;
   /* universe tokens: mesh colors, accent, primary gradient (overridden per universe) */
@@ -707,3 +707,76 @@ input[type=file].in{min-width:0;max-width:100%;font-size:13px}
 .icon-btn.ghosty{background:transparent;border-color:var(--line-2);color:var(--muted)}
 @media (max-width:480px){.ihead{grid-template-columns:60px minmax(0,1fr) auto;gap:12px}.ihead-cv .cv,.cv-empty{width:60px}.title-in{font-size:19px}}
 .s-abandonado{--dot:var(--faint)}
+
+/* ================= v8: polido e leve ================= */
+/* fundo: só gradientes e transform (sem filter: blur, que pesa no celular) */
+.mesh span{filter:none;will-change:transform}
+.b1{background:radial-gradient(circle at center,var(--m1) 0%,color-mix(in srgb,var(--m1) 35%,transparent) 30%,transparent 68%)}
+.b2{background:radial-gradient(circle at center,var(--m2) 0%,color-mix(in srgb,var(--m2) 30%,transparent) 30%,transparent 66%)}
+.b3{background:radial-gradient(circle at center,var(--m3) 0%,color-mix(in srgb,var(--m3) 35%,transparent) 30%,transparent 66%)}
+.b4{background:radial-gradient(circle at center,var(--m4) 0%,color-mix(in srgb,var(--m4) 30%,transparent) 30%,transparent 68%)}
+/* menos vidro desfocado: só no menu, botão flutuante e avisos */
+.scrim{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(3,4,10,.62)}
+.sheet{-webkit-backdrop-filter:none;backdrop-filter:none;background:linear-gradient(140deg,rgba(28,31,56,.97),rgba(11,13,26,.98))}
+.qbtn{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(6,8,15,.66)}
+/* página: entra rápido, sem esperar a anterior sair */
+.page-in{animation:pageIn .22s cubic-bezier(.2,.9,.3,1)}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}}
+.app{padding-top:calc(var(--sat) + 8px)}
+/* menu + botão flutuante */
+.navbar{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(14px + var(--sab));display:flex;align-items:center;gap:10px}
+.navbar .dock{position:static;transform:none;left:auto;right:auto;bottom:auto;max-width:none}
+.fab{flex:none;display:grid;place-items:center;width:60px;height:60px;border-radius:50%;border:1px solid rgba(255,255,255,.32);background:linear-gradient(135deg,var(--pa),var(--pb));color:#fff;cursor:pointer;box-shadow:inset 0 1px 1px rgba(255,255,255,.45),0 12px 28px -10px var(--pa),0 4px 14px -6px rgba(0,0,0,.6);transition:transform .18s cubic-bezier(.2,1.4,.4,1)}
+.fab svg{width:28px;height:28px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round}
+.fab:active{transform:scale(.9)}
+.fab:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+@media (max-width:640px){
+  .navbar{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));transform:none;bottom:calc(10px + var(--sab));gap:8px}
+  .navbar .dock{flex:1;min-width:0;padding:6px}
+  .navbar .dock button{padding:9px 0 8px}
+  .fab{width:58px;height:58px}
+}
+@media (max-width:340px){.navbar .dock .sm{font-size:10px}.fab{width:52px;height:52px}}
+/* início */
+.home-top{display:flex;align-items:center;gap:10px;margin:18px 0 6px}
+.home-hello{flex:1;margin:0;font:800 clamp(30px,7vw,44px)/1 var(--f-display);letter-spacing:-.04em}
+.round-btn{position:relative;display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:50%;border:1px solid var(--line-2);background:rgba(255,255,255,.04);color:var(--ink-soft);cursor:pointer;transition:background .2s,transform .15s}
+.round-btn:active{transform:scale(.92)}
+.round-btn:hover,.round-btn.on{background:rgba(255,255,255,.1);color:var(--fg)}
+.round-btn svg.i{width:19px;height:19px}
+.avatar span{font:800 16px var(--f-display)}
+.avatar{background:linear-gradient(135deg,color-mix(in srgb,var(--pa) 60%,transparent),color-mix(in srgb,var(--pb) 50%,transparent));color:#fff;border-color:rgba(255,255,255,.25)}
+.avatar.warn::after{content:"";position:absolute;top:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--rose);box-shadow:0 0 0 2px var(--bg)}
+.empty-home{margin-top:28px;max-width:40ch}
+.hero{margin-top:14px}
+.hero-p{max-width:none;justify-content:flex-start;margin-top:10px}
+/* área */
+.u-top{margin-top:18px}
+.back-top{display:flex;align-items:center;gap:12px}
+.back-top .u-title{font-size:clamp(32px,7vw,56px)}
+.tools2{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.tools2 .find{flex:1}
+.badge{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--u);color:#06080F;font:800 11px/18px var(--f-body);text-align:center}
+.fpanel{display:flex;flex-direction:column;gap:12px;padding:14px 0 18px;margin-bottom:8px;border-bottom:1px solid var(--line);animation:pageIn .2s ease}
+.fsel{display:flex;flex-wrap:wrap;gap:8px 22px}
+.fsel label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--faint)}
+.fsel select.plain{color:var(--fg)}
+.more{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:10px;font:600 13px var(--f-body);color:var(--muted)}
+.more:hover{color:var(--fg)}
+.more svg.i{width:14px;height:14px}
+.start-btn{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid color-mix(in srgb,var(--c) 50%,transparent);background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--fg);cursor:pointer;transition:transform .15s}
+.start-btn:active{transform:scale(.9)}
+.start-btn svg.i{width:15px;height:15px;color:var(--c);margin-left:2px}
+.hot-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ember);margin-left:8px;vertical-align:middle;box-shadow:0 0 8px var(--ember)}
+/* estante: título embaixo da capa, sem texto dentro dela */
+.sh-cv .cv .ct,.sh-cv .cv .ca{display:none}
+.sh-t{font:700 14px/1.25 var(--f-display);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sh-i{gap:6px}
+.sh-m{font-size:12px}
+/* imagens entram suavemente */
+.cv img{animation:imgIn .35s ease}
+@keyframes imgIn{from{opacity:0}}
+/* toque mais responsivo */
+.cont-cv .cv-btn,.sh-i,.r-tx,.r-cv{-webkit-tap-highlight-color:transparent}
+.sh-i:active,.cv-btn:active{transform:scale(.97)}
+.tools2 .find{flex:1 1 0;min-width:0}
