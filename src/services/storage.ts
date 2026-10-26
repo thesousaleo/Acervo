@@ -1,5 +1,6 @@
 import type { Config, MediaItem } from '../types/media';
 import { exampleId, seed } from '../data/seed';
+import { dedupe } from './backup';
 
 /** Persistência local (offline-first): igual na Web e no APK. */
 const KEY = 'acervo.v1';
@@ -17,7 +18,7 @@ export const storage = {
     const p = read<{ items: MediaItem[] }>(KEY);
     if (!p || !Array.isArray(p.items)) return seed();
     const ex = new Set(seed().map(i => i.id));
-    return p.items.map(i => { const id = exampleId(i.categoria, i.titulo); return !i.id.startsWith('ex-') && ex.has(id) ? { ...i, id } : i; });
+    return dedupe(p.items.map(i => { const id = exampleId(i.categoria, i.titulo); return !i.id.startsWith('ex-') && ex.has(id) ? { ...i, id } : i; }));
   },
   saveItems(items: MediaItem[]) { write(KEY, { version: 2, items }); },
   loadConfig(): Config { return read<Config>(CFG) || { metas: [], updatedAt: 0 }; },

@@ -38,13 +38,18 @@ export function parseBackup(raw: string): MediaItem[] {
   return valid;
 }
 
+/** Remove ids repetidos, mantendo a versão mais recente de cada um (preferindo a que não foi excluída em empate). */
+export function dedupe(items: MediaItem[]): MediaItem[] {
+  const best = new Map<string, MediaItem>();
+  for (const it of items) {
+    const cur = best.get(it.id);
+    if (!cur || (it.updatedAt || 0) > (cur.updatedAt || 0) || ((it.updatedAt || 0) === (cur.updatedAt || 0) && cur.deletedAt && !it.deletedAt)) best.set(it.id, it);
+  }
+  const seen = new Set<string>();
+  return items.filter(it => best.get(it.id) === it && !seen.has(it.id) && seen.add(it.id));
+}
+
 /** Mescla mantendo a versão mais recente (updatedAt) de cada id. */
 export function merge(current: MediaItem[], incoming: MediaItem[]): MediaItem[] {
-  const out = [...current];
-  for (const v of incoming) {
-    const i = out.findIndex(x => x.id === v.id);
-    if (i < 0) out.push(v);
-    else if ((v.updatedAt || 0) >= (out[i].updatedAt || 0)) out[i] = v;
-  }
-  return out;
+  return dedupe([...current, ...incoming]);
 }

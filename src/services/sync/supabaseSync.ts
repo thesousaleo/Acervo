@@ -1,6 +1,7 @@
 import type { Config, MediaItem } from '../../types/media';
 import { auth } from '../auth';
 import { SUPABASE_KEY, SUPABASE_URL } from '../supabase';
+import { dedupe } from '../backup';
 
 /** Sincronização com o Supabase (REST, com o token do usuário logado). */
 const REST = SUPABASE_URL + '/rest/v1';
@@ -22,6 +23,7 @@ export const cloud = {
     return (await r.json()).map((x: { data: MediaItem }) => x.data);
   },
   async push(items: MediaItem[]) {
+    items = dedupe(items);
     if (!items.length) return;
     const rows = items.map(i => ({ id: i.id, data: i, updated_at: i.updatedAt || Date.now() }));
     for (let i = 0; i < rows.length; i += 200) {
