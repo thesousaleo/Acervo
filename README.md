@@ -69,7 +69,8 @@ Trocar de chave exige desinstalar o app uma vez (exporte o backup antes).
 
 ## Sincronização com Supabase (opcional)
 
-1. Crie um projeto em supabase.com e rode no SQL Editor:
+1. Crie um projeto grátis em supabase.com.
+2. Em **SQL Editor → New query**, cole e rode:
 
 ```sql
 create table if not exists acervo_items (
@@ -78,13 +79,20 @@ create table if not exists acervo_items (
   updated_at bigint not null
 );
 alter table acervo_items enable row level security;
-create policy "acesso com anon key" on acervo_items for all using (true) with check (true);
+create policy "acesso com chave publica" on acervo_items
+  for all using (true) with check (true);
 ```
 
-2. No app, aba **Backup → Supabase**, cole a *Project URL* e a *anon key* e toque em **Sincronizar agora**.
-   A sincronização baixa, mescla pela edição mais recente de cada item e envia de volta.
+3. Em **Project Settings → API Keys**, copie a **Project URL** (`https://xxxx.supabase.co`) e a chave
+   **publishable** (`sb_publishable_…`; projetos antigos mostram a *anon key* `eyJ…`, que também funciona).
+4. No app, aba **Backup → Supabase**, cole as duas e toque em **Salvar e conectar**. Faça o mesmo no outro aparelho.
 
-> A política acima libera a tabela para quem tiver a anon key. Para um app pessoal é suficiente; não compartilhe a chave.
+A partir daí a sincronização é automática: ao abrir o app, ao voltar para ele, quando a internet volta e
+poucos segundos depois de cada alteração. Em conflito vale a edição mais recente de cada item, e exclusões
+também são sincronizadas.
+
+> A política acima libera a tabela para quem tiver a chave pública. Para um app pessoal é suficiente; não divulgue a chave.
+> Nunca use a chave **secret** / *service_role* no app.
 
 O serviço fica em `src/services/sync/` (`SyncProvider` é a interface; `supabaseSync.ts` a implementação).
 

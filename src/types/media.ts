@@ -19,6 +19,8 @@ export interface BaseItem {
   updatedAt: number;       // epoch ms
   /** só para status = wishlist */
   prioridade?: Prioridade;
+  /** marca de exclusão (tombstone) para propagar exclusões na sincronização */
+  deletedAt?: number;
 }
 
 export interface Filme extends BaseItem {

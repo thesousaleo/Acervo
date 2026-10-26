@@ -31,7 +31,7 @@ export const DEF: Record<Categoria, Record<string, any>> = {
   livro: { autor: '', formato: 'Físico', paginaAtual: 0, totalPaginas: null },
   jogo:  { plataforma: 'PC', horasJogadas: 0, nivelConclusao: 'Jogando' }
 };
-const COMMON = ['id', 'titulo', 'categoria', 'capaUrl', 'status', 'nota', 'favorito', 'dataInicio', 'dataConclusao', 'review', 'updatedAt', 'prioridade'];
+const COMMON = ['id', 'titulo', 'categoria', 'capaUrl', 'status', 'nota', 'favorito', 'dataInicio', 'dataConclusao', 'review', 'updatedAt', 'prioridade', 'deletedAt'];
 export const NUM = new Set(['nota', 'ano', 'duracaoMin', 'temporadaAtual', 'episodioAtual', 'totalTemporadas', 'paginaAtual', 'totalPaginas', 'horasJogadas']);
 
 export const uniOf = (it: { categoria: Categoria }): Universo => it.categoria === 'jogo' ? 'jogos' : it.categoria === 'livro' ? 'livros' : 'tela';
@@ -46,6 +46,7 @@ export function clean(d: Draft): MediaItem {
   const o: Record<string, any> = {};
   for (const k of keep) {
     const v = d[k];
+    if (k === 'deletedAt') { if (v) o[k] = v; continue; }
     o[k] = v ?? (def[k] !== undefined ? structuredCopy(def[k]) : k === 'favorito' ? false : k === 'nota' ? 0 : k === 'updatedAt' ? Date.now() : '');
   }
   if (!o.id) o.id = uid();

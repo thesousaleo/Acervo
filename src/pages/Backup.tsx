@@ -1,18 +1,22 @@
 import { Cloud, Download, RefreshCw, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { exportFile, ImportError, merge, parseBackup } from '../services/backup';
-import { storage } from '../services/storage';
-import { supabaseSync } from '../services/sync/supabaseSync';
 import { useLibrary } from '../store/useLibrary';
 
 export function Backup() {
-  const { items, setItems, resetSample, toast } = useLibrary();
+  const { items, setItems, resetSample, toast, sb: saved, setSupabase, sync, syncNow } = useLibrary();
   const [raw, setRaw] = useState('');
   const [msg, setMsg] = useState('');
   const [confirmReset, setConfirmReset] = useState(false);
-  const [sb, setSb] = useState(storage.loadSupabase());
-  const [syncing, setSyncing] = useState(false);
-  const configured = !!(sb.url && sb.key);
+  const [sb, setSb] = useState(saved);
+  const configured = !!(saved.url && saved.key);
+  const syncing = sync.status === 'syncing';
+  const hhmm = (t?: number) => t ? new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+  const stateText = !configured ? 'Desconectado · apenas local'
+    : sync.status === 'syncing' ? 'Sincronizando…'
+    : sync.status === 'error' ? `Erro: ${sync.error || 'falha na sincronização'}`
+    : sync.at ? `Sincronizado às ${hhmm(sync.at)} · automático` : 'Configurado · sincroniza automaticamente';
+  const dot = !configured ? 'var(--faint)' : sync.status === 'error' ? 'var(--rose)' : sync.status === 'syncing' ? 'var(--warn)' : 'var(--ok)';
 
   const doExport = async () => {
     try { const how = await exportFile(items); toast(how === 'share' ? 'Escolha onde salvar o backup' : 'Backup baixado'); }
@@ -26,19 +30,13 @@ export function Backup() {
     } catch (e) { setMsg(e instanceof ImportError ? e.message : 'Falha ao importar.'); }
   };
   const onFile = (f?: File) => { if (!f) return; const r = new FileReader(); r.onload = () => setRaw(String(r.result || '')); r.readAsText(f); };
-  const saveSb = () => { const ok = storage.saveSupabase({ url: sb.url.trim(), key: sb.key.trim() }); toast(ok ? 'Configuração salva' : 'Não foi possível salvar'); };
-  const sync = async () => {
-    setSyncing(true);
-    try {
-      const p = supabaseSync(sb);
-      const remote = await p.pull();
-      const merged = merge(items, remote);
-      await p.push(merged);
-      setItems(() => merged);
-      toast(`Sincronizado · ${merged.length} itens`);
-    } catch (e: any) { toast(e?.message?.slice(0, 120) || 'Falha na sincronização'); }
-    finally { setSyncing(false); }
+  const saveSb = () => {
+    const url = sb.url.trim().replace(/\/+$/, ''), key = sb.key.trim();
+    if ((url || key) && !/^https:\/\/.+\.supabase\.co$/.test(url)) { toast('A URL deve ser como https://xxxx.supabase.co'); return; }
+    const ok = setSupabase({ url, key });
+    toast(!ok ? 'Não foi possível salvar' : url && key ? 'Conectado · sincronizando' : 'Sincronização desligada');
   };
+  const disconnect = () => { setSb({ url: '', key: '' }); setSupabase({ url: '', key: '' }); toast('Sincronização desligada'); };
 
   return (
     <>
@@ -60,13 +58,14 @@ export function Backup() {
         </section>
         <section className="panel glass">
           <h3><Cloud className="i" aria-hidden />Supabase</h3>
-          <p>Opcional. Com a URL do projeto e a chave anônima, o app sincroniza entre PC e celular. O passo a passo da tabela está no README.</p>
-          <span className="state" style={{ ['--dot' as any]: configured ? 'var(--ok)' : 'var(--faint)' }}>{configured ? 'Configurado' : 'Desconectado · apenas local'}</span>
+          <p>Com a URL do projeto e a chave anônima, o app sincroniza sozinho entre PC e celular: ao abrir, ao voltar para o app e logo depois de cada alteração.</p>
+          <span className="state" style={{ ['--dot' as any]: dot }}>{stateText}</span>
           <label className="fld"><span>URL do projeto</span><input className="in" placeholder="https://xxxx.supabase.co" value={sb.url} onChange={e => setSb({ ...sb, url: e.target.value })} autoComplete="off" /></label>
-          <label className="fld"><span>Chave anônima (anon key)</span><input className="in" type="password" placeholder="eyJhbGciOi…" value={sb.key} onChange={e => setSb({ ...sb, key: e.target.value })} autoComplete="off" /></label>
+          <label className="fld"><span>Chave pública (publishable / anon key)</span><input className="in" type="password" placeholder="sb_publishable_… ou eyJhbGciOi…" value={sb.key} onChange={e => setSb({ ...sb, key: e.target.value })} autoComplete="off" /></label>
           <div className="row">
-            <button className="btn" onClick={saveSb}>Salvar configuração</button>
-            <button className="btn primary" disabled={!configured || syncing} onClick={sync}><RefreshCw className="i" aria-hidden />{syncing ? 'Sincronizando…' : 'Sincronizar agora'}</button>
+            <button className="btn" onClick={saveSb}>Salvar e conectar</button>
+            <button className="btn primary" disabled={!configured || syncing} onClick={syncNow}><RefreshCw className="i" aria-hidden />{syncing ? 'Sincronizando…' : 'Sincronizar agora'}</button>
+            {configured && <button className="btn ghost" onClick={disconnect}>Desconectar</button>}
           </div>
         </section>
         <section className="panel glass">

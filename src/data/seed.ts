@@ -1,11 +1,14 @@
 import type { MediaItem } from '../types/media';
-import { DEF, uid } from './catalog';
+import { DEF } from './catalog';
+
+/** id fixo por exemplo: o mesmo item de exemplo em dois aparelhos vira um só ao sincronizar. */
+export const exampleId = (cat: string, titulo: string) => 'ex-' + cat + '-' + titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /** Itens de exemplo exibidos na primeira abertura (podem ser apagados em Backup). */
 export function seed(): MediaItem[] {
   const mk = (o: Record<string, any>): MediaItem => {
-    const it: any = { id: uid(), capaUrl: '', favorito: false, nota: 0, dataInicio: '', dataConclusao: '', review: '', ...JSON.parse(JSON.stringify(DEF[o.categoria as keyof typeof DEF])), ...o };
-    it.updatedAt = Date.parse((it.dataConclusao || it.dataInicio || '2026-01-01') + 'T12:00:00') + Math.floor(Math.random() * 1000);
+    const it: any = { id: exampleId(o.categoria, o.titulo), capaUrl: '', favorito: false, nota: 0, dataInicio: '', dataConclusao: '', review: '', ...JSON.parse(JSON.stringify(DEF[o.categoria as keyof typeof DEF])), ...o };
+    it.updatedAt = Date.parse((it.dataConclusao || it.dataInicio || '2026-01-01') + 'T12:00:00');
     return it;
   };
   return [

@@ -1,5 +1,5 @@
 import type { MediaItem, UniversoFiltro } from '../types/media';
-import { seed } from '../data/seed';
+import { exampleId, seed } from '../data/seed';
 
 /**
  * Persistência local (offline-first). Funciona igual na Web e no APK:
@@ -15,7 +15,10 @@ const write = (k: string, v: unknown): boolean => { try { localStorage.setItem(k
 export const storage = {
   loadItems(): MediaItem[] {
     const p = read<{ items: MediaItem[] }>(KEY);
-    return p && Array.isArray(p.items) ? p.items : seed();
+    if (!p || !Array.isArray(p.items)) return seed();
+    // migração: exemplos antigos (id aleatório) passam a usar id fixo
+    const ex = new Set(seed().map(i => i.id));
+    return p.items.map(i => { const id = exampleId(i.categoria, i.titulo); return !i.id.startsWith('ex-') && ex.has(id) ? { ...i, id } : i; });
   },
   saveItems(items: MediaItem[]) { write(KEY, { version: 1, items }); },
   loadUniverse(): UniversoFiltro {
