@@ -40,15 +40,15 @@ export function Backup() {
 
   return (
     <>
-      <h1 className="h1">Backup e sincronização</h1>
-      <p className="lede">Os dados ficam salvos neste aparelho e funcionam offline. Exporte um .json para guardar uma cópia ou levar para outro dispositivo.</p>
+      <header className="u-top"><h1 className="u-title">Backup</h1></header>
+      <p className="lede" style={{ marginTop: 12 }}>Os dados ficam salvos neste aparelho e funcionam offline. Exporte um .json para guardar uma cópia ou levar para outro dispositivo.</p>
       <div className="panels">
-        <section className="panel glass">
+        <section className="panel">
           <h3><Download className="i" aria-hidden />Exportar</h3>
           <p>{items.length} itens. No celular abre o menu de compartilhar para salvar no Drive, enviar por e-mail etc.</p>
           <div className="row"><button className="btn primary" onClick={doExport}><Download className="i" aria-hidden />Exportar .json</button></div>
         </section>
-        <section className="panel glass">
+        <section className="panel">
           <h3><Upload className="i" aria-hidden />Importar</h3>
           <p>Escolha um arquivo .json exportado pelo Acervo ou cole o conteúdo. “Mesclar” mantém a versão mais recente de cada item.</p>
           <input className="in" type="file" accept="application/json,.json" aria-label="Arquivo JSON" onChange={e => onFile(e.target.files?.[0])} />
@@ -56,7 +56,7 @@ export function Backup() {
           <div className="row"><button className="btn primary" onClick={() => doImport('merge')}>Mesclar</button><button className="btn" onClick={() => doImport('replace')}>Substituir tudo</button></div>
           {msg && <p className="err">{msg}</p>}
         </section>
-        <section className="panel glass">
+        <section className="panel">
           <h3><Cloud className="i" aria-hidden />Supabase</h3>
           <p>Com a URL do projeto e a chave anônima, o app sincroniza sozinho entre PC e celular: ao abrir, ao voltar para o app e logo depois de cada alteração.</p>
           <span className="state" style={{ ['--dot' as any]: dot }}>{stateText}</span>
@@ -68,7 +68,7 @@ export function Backup() {
             {configured && <button className="btn ghost" onClick={disconnect}>Desconectar</button>}
           </div>
         </section>
-        <section className="panel glass">
+        <section className="panel">
           <h3><RefreshCw className="i" aria-hidden />Dados de exemplo</h3>
           <p>Apaga tudo o que está salvo neste aparelho e recarrega os itens de exemplo. Para começar do zero, use “Apagar tudo”.</p>
           <div className="row">

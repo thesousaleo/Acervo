@@ -1,13 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { MediaItem, UniversoFiltro } from '../types/media';
+import type { MediaItem, Status, UniversoFiltro } from '../types/media';
 import { storage } from '../services/storage';
 import { seed } from '../data/seed';
-import { uniOf } from '../data/catalog';
+import { GROUPS, uniOf } from '../data/catalog';
 import { today } from '../lib/dates';
 import { merge } from '../services/backup';
 import { supabaseSync } from '../services/sync/supabaseSync';
 
-export type Tab = 'agora' | 'biblioteca' | 'desejos' | 'diario' | 'backup';
+export type Tab = 'inicio' | 'tela' | 'jogos' | 'livros' | 'diario' | 'backup';
 export type SyncState = { status: 'off' | 'syncing' | 'ok' | 'error'; at?: number; error?: string };
 type SbConfig = { url: string; key: string };
 
@@ -16,7 +16,8 @@ interface Ctx {
   items: MediaItem[];
   setItems: (fn: (prev: MediaItem[]) => MediaItem[]) => void;
   tab: Tab; setTab: (t: Tab) => void;
-  u: UniversoFiltro; setU: (u: UniversoFiltro) => void;
+  /** área atual, derivada da aba */
+  u: UniversoFiltro;
   inU: (it: MediaItem) => boolean;
   update: (id: string, fn: (it: any) => void, msg?: string) => void;
   upsert: (it: MediaItem) => void;
@@ -24,8 +25,9 @@ interface Ctx {
   resetSample: () => void;
   toast: (msg: string) => void;
   toastMsg: { id: number; text: string } | null;
-  editing: { id: string | null } | null;
-  openEditor: (id: string | null) => void;
+  editing: { id: string | null; status?: Status } | null;
+  openEditor: (id: string | null, status?: Status) => void;
+  pageEdit: string | null; setPageEdit: (id: string | null) => void;
   closeEditor: () => void;
   sb: SbConfig; setSupabase: (c: SbConfig) => boolean;
   sync: SyncState; syncNow: () => Promise<void>;
@@ -37,8 +39,9 @@ const tomb = (it: MediaItem): MediaItem => ({ ...it, deletedAt: Date.now(), upda
 export function LibraryProvider({ children }: { children: ReactNode }) {
   // "all" inclui marcas de exclusão para que a sincronização propague exclusões.
   const [all, setAll] = useState<MediaItem[]>(() => storage.loadItems());
-  const [tab, setTabState] = useState<Tab>('agora');
-  const [u, setUState] = useState<UniversoFiltro>(() => storage.loadUniverse());
+  const [tab, setTabState] = useState<Tab>('inicio');
+  const u: UniversoFiltro = tab in GROUPS ? tab as UniversoFiltro : 'todos';
+  const [pageEdit, setPageEdit] = useState<string | null>(null);
   const [toastMsg, setToast] = useState<Ctx['toastMsg']>(null);
   const [editing, setEditing] = useState<Ctx['editing']>(null);
   const [sb, setSb] = useState<SbConfig>(() => storage.loadSupabase());
@@ -51,7 +54,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const items = useMemo(() => all.filter(i => !i.deletedAt), [all]);
 
   useEffect(() => { storage.saveItems(all); }, [all]);
-  useEffect(() => { document.documentElement.dataset.u = u; storage.saveUniverse(u); }, [u]);
+  useEffect(() => { document.documentElement.dataset.u = u; }, [u]);
 
   const toast = useCallback((text: string) => {
     setToast({ id: Date.now(), text });
@@ -127,13 +130,13 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Ctx>(() => ({
     items, setItems, tab,
-    setTab: (t) => { setTabState(t); window.scrollTo({ top: 0 }); },
-    u, setU: (n) => { setUState(n); window.scrollTo({ top: 0 }); },
+    setTab: (t) => { setTabState(t); setPageEdit(null); window.scrollTo({ top: 0 }); },
+    u, pageEdit, setPageEdit,
     inU: (it) => u === 'todos' || uniOf(it) === u,
     update, upsert, remove, resetSample, toast, toastMsg,
-    editing, openEditor: (id) => setEditing({ id }), closeEditor: () => setEditing(null),
+    editing, openEditor: (id, status) => setEditing({ id, status }), closeEditor: () => setEditing(null),
     sb, setSupabase, sync, syncNow
-  }), [items, tab, u, toastMsg, editing, update, upsert, remove, resetSample, toast, setItems, sb, setSupabase, sync, syncNow]);
+  }), [items, tab, u, pageEdit, toastMsg, editing, update, upsert, remove, resetSample, toast, setItems, sb, setSupabase, sync, syncNow]);
 
   return <LibraryContext.Provider value={value}>{children}</LibraryContext.Provider>;
 }

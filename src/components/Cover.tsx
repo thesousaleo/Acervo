@@ -7,7 +7,7 @@ import { CAT_ICON } from './icons';
 export const shapeOf = (it: MediaItem) => it.categoria === 'livro' ? 'book' : it.categoria === 'jogo' ? 'game' : 'screen';
 
 /** Capa gerada (gradiente + inicial) com formato por universo; usa capaUrl quando existir. */
-export function Cover({ it, size = 'md' }: { it: MediaItem; size?: 'sm' | 'md' }) {
+export function Cover({ it, size = 'md' }: { it: MediaItem; size?: 'xs' | 'sm' | 'md' }) {
   const [broken, setBroken] = useState(false);
   const h = hue(it.titulo || '?'), shape = shapeOf(it);
   const g = shape === 'book'

@@ -4,17 +4,23 @@ import { Header } from './components/Header';
 import { ItemModal } from './components/ItemModal/ItemModal';
 import { MeshBackground } from './components/MeshBackground';
 import { Toast } from './components/Toast';
-import { Agora } from './pages/Agora';
+import { Area } from './pages/Area';
 import { Backup } from './pages/Backup';
-import { Biblioteca } from './pages/Biblioteca';
-import { Desejos } from './pages/Desejos';
 import { Diario } from './pages/Diario';
+import { Inicio } from './pages/Inicio';
 import { useLibrary } from './store/useLibrary';
 
-const PAGES = { agora: Agora, biblioteca: Biblioteca, desejos: Desejos, diario: Diario, backup: Backup };
+const PAGES = {
+  inicio: Inicio,
+  tela: () => <Area u="tela" />,
+  jogos: () => <Area u="jogos" />,
+  livros: () => <Area u="livros" />,
+  diario: Diario,
+  backup: Backup
+};
 
 export default function App() {
-  const { tab, u } = useLibrary();
+  const { tab } = useLibrary();
   const Page = PAGES[tab];
   return (
     <>
@@ -23,7 +29,7 @@ export default function App() {
         <div className="wrap">
           <Header />
           <AnimatePresence mode="wait" initial={false}>
-            <motion.main key={tab + u} initial={{ opacity: 0.3, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: .28, ease: [0.2, 0.9, 0.3, 1] }}>
+            <motion.main key={tab} initial={{ opacity: 0.3, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: .28, ease: [0.2, 0.9, 0.3, 1] }}>
               <Page />
             </motion.main>
           </AnimatePresence>

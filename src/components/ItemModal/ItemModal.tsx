@@ -17,19 +17,19 @@ export function ItemModal() {
     window.addEventListener('keydown', onKey);
     return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
   }, [editing, closeEditor]);
-  return <AnimatePresence>{editing && <Sheet key={editing.id || 'new'} id={editing.id} />}</AnimatePresence>;
+  return <AnimatePresence>{editing && <Sheet key={editing.id || 'new'} id={editing.id} status={editing.status} />}</AnimatePresence>;
 }
 
 const narrow = () => window.matchMedia('(max-width:640px)').matches;
 
-function Sheet({ id }: { id: string | null }) {
-  const { items, u, tab, closeEditor, upsert, remove, toast } = useLibrary();
+function Sheet({ id, status }: { id: string | null; status?: Status }) {
+  const { items, u, closeEditor, upsert, remove, toast } = useLibrary();
   const isNew = !id;
   const [d, setD] = useState<Draft>(() => {
     const found = id && items.find(i => i.id === id);
     if (found) return JSON.parse(JSON.stringify(found));
     const cat: Categoria = u === 'todos' ? 'filme' : GROUPS[u].def;
-    return blank(cat, tab === 'desejos' ? 'wishlist' : 'consumindo');
+    return blank(cat, status || 'consumindo');
   });
   const [err, setErr] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);

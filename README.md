@@ -8,12 +8,12 @@ Roda na Web (GitHub Pages) e como app Android (APK via Capacitor).
 
 ## O que tem
 
-- Três universos separados: **Filmes & Séries**, **Jogos** e **Livros** (cor, formato de capa e números próprios), mais a visão **Tudo**.
-- **Agora:** o que está em andamento, com atalhos `+1 Ep`, `Atualizar página`, `+1h` e `Concluir hoje`.
-- **Biblioteca:** busca em tempo real, filtros por status/favoritos e ordenação (nota, conclusão, título).
-- **Desejos:** backlog por prioridade/hype, com `Começar agora`.
-- **Diário:** linha do tempo mensal do que foi concluído (com rewatches de filmes).
-- **Backup:** exportar/importar `.json` e sincronização opcional com Supabase.
+Um menu só, na parte de baixo: **Início · Filmes/Séries · Jogos · Livros · Diário** (backup na engrenagem do topo).
+
+- **Início:** destaque do que você mexeu por último, resumo das três áreas, "Continuar" e terminados recentemente.
+- **Filmes/Séries, Jogos e Livros:** números da área, o que está em andamento (atalhos `+1 ep`, `página`, `+1 h` e ✓ concluir na própria capa), **Na fila** (desejos por hype, com `Começar`) e **Estante** com busca, filtros e ordenação.
+- **Diário:** tudo o que foi concluído, mês a mês, com nota, review e rewatches.
+- **Backup:** exportar/importar `.json` e sincronização automática com Supabase.
 
 Os dados ficam no próprio aparelho (`localStorage`) e funcionam offline. Web e APK guardam dados separados; use o backup `.json` ou o Supabase para levar de um para o outro.
 
@@ -104,10 +104,10 @@ O serviço fica em `src/services/sync/` (`SyncProvider` é a interface; `supabas
 ```
 src/
 ├── App.tsx                 shell: fundo, header, páginas, dock
-├── components/             Cover, Stars, Header, Dock, Universe, cards/, ItemModal/
+├── components/             Cover, Stars, Header, Dock, items/, ItemModal/
 ├── data/                   catalog.ts (categorias, universos, campos) · seed.ts
 ├── lib/                    datas, progresso e estatísticas
-├── pages/                  Agora, Biblioteca, Desejos, Diario, Backup
+├── pages/                  Inicio, Area (Filmes/Séries, Jogos, Livros), Diario, Backup
 ├── services/               storage, backup, platform (nativo), sync/
 ├── store/useLibrary.tsx    estado global e ações rápidas
 └── styles/liquid.css       design system Liquid Glass
