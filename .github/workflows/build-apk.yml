@@ -46,8 +46,8 @@ jobs:
           F=$(find android/app/src -name 'MainActivity.*' | head -1)
           echo "MainActivity encontrada em: $F"
           case "$F" in
-            *.kt)   cp native/android/MainActivity.kt "$F" ;;
-            *.java) cp native/android/MainActivity.java "$F" ;;
+            *.kt)   cp native/patches/MainActivity.kt "$F" ;;
+            *.java) cp native/patches/MainActivity.java "$F" ;;
             *)      echo "::warning::MainActivity não encontrada; seguindo sem o ajuste de texto" ;;
           esac
 
