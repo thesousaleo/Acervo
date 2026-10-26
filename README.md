@@ -79,8 +79,11 @@ create table if not exists acervo_items (
   updated_at bigint not null
 );
 alter table acervo_items enable row level security;
-create policy "acesso com chave publica" on acervo_items
-  for all using (true) with check (true);
+revoke all on acervo_items from anon, authenticated;
+grant select, insert, update on acervo_items to anon, authenticated;
+create policy "acervo: leitura"   on acervo_items for select to anon, authenticated using (true);
+create policy "acervo: inserir"   on acervo_items for insert to anon, authenticated with check (true);
+create policy "acervo: atualizar" on acervo_items for update to anon, authenticated using (true) with check (true);
 ```
 
 3. Em **Project Settings → API Keys**, copie a **Project URL** (`https://xxxx.supabase.co`) e a chave
@@ -91,7 +94,7 @@ A partir daí a sincronização é automática: ao abrir o app, ao voltar para e
 poucos segundos depois de cada alteração. Em conflito vale a edição mais recente de cada item, e exclusões
 também são sincronizadas.
 
-> A política acima libera a tabela para quem tiver a chave pública. Para um app pessoal é suficiente; não divulgue a chave.
+> As políticas acima liberam leitura e escrita (sem apagar linhas) para quem tiver a chave pública. Para um app pessoal é suficiente; não divulgue a chave.
 > Nunca use a chave **secret** / *service_role* no app.
 
 O serviço fica em `src/services/sync/` (`SyncProvider` é a interface; `supabaseSync.ts` a implementação).
