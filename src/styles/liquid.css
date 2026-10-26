@@ -487,3 +487,14 @@ select.plain option{background:var(--opt);color:var(--fg)}
 
 /* app: botões de link sem estilo nativo */
 .sh-link,.pill-btn,.qbtn{-webkit-appearance:none;appearance:none}
+
+/* ---------- Menu inferior: mais espaço no celular ---------- */
+.dock .sm{display:none}
+@media (max-width:640px){
+  .dock{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));transform:none;max-width:none;justify-content:space-between;gap:4px;padding:7px;border-radius:28px;bottom:calc(10px + var(--sab))}
+  .dock button{flex:1 1 0;min-width:0;padding:10px 0 9px;gap:5px;font-size:11.5px;letter-spacing:0;border-radius:22px}
+  .dock svg.i{width:23px;height:23px}
+  .dock .lg{display:none}
+  .dock .sm{display:block}
+  .app{padding-bottom:calc(120px + var(--sab))}
+}

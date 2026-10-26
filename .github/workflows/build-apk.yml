@@ -38,7 +38,7 @@ jobs:
       - name: Gerar projeto Android (Capacitor)
         run: |
           npx cap add android
-          npx capacitor-assets generate --android --iconBackgroundColor '#06080F' --splashBackgroundColor '#06080F'
+          npx capacitor-assets generate --android --splashBackgroundColor '#06080F'
           npx cap sync android
 
       - name: Versão do app
