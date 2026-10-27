@@ -3,7 +3,7 @@ import { SUPABASE_KEY, SUPABASE_URL } from './supabase';
 
 /** Resultado de busca normalizado para qualquer tipo de mídia. */
 export interface MetaHit {
-  fonte: 'tmdb' | 'igdb' | 'anilist' | 'google' | 'openlibrary';
+  fonte: 'tmdb' | 'anilist' | 'google' | 'openlibrary';
   tipo: string; extId: string; titulo: string; ano?: string | number | null; capa: string; resumo?: string; sub?: string;
   /** campos já prontos para aplicar no item (quando a busca já traz tudo) */
   dados?: Record<string, any>;
@@ -64,7 +64,7 @@ async function books(q: string): Promise<MetaHit[]> {
 }
 
 export const meta = {
-  status: () => fn({ action: 'status' }) as Promise<{ tmdb: boolean; igdb: boolean }>,
+  status: () => fn({ action: 'status' }) as Promise<{ tmdb: boolean }>,
 
   async search(cat: Categoria, q: string): Promise<MetaHit[]> {
     q = q.trim(); if (!q) return [];
@@ -74,10 +74,8 @@ export const meta = {
       case 'anime': return anilist(q, 'ANIME');
       case 'hq': return anilist(q, 'MANGA');
       case 'livro': return books(q);
-      case 'jogo': return (await fn({ action: 'igdb.search', q })).map((g: any): MetaHit => ({
-        fonte: 'igdb', tipo: 'jogo', extId: g.extId, titulo: g.titulo, ano: g.ano, capa: g.capa, sub: (g.plataformas || []).slice(0, 4).join(' · '),
-        dados: { titulo: g.titulo, capaUrl: g.capa, generos: g.generos, tempoEstimado: g.tempo, plataformas: g.plataformas, ext: { fonte: 'igdb', id: g.extId } } }));
     }
+    return [];
   },
 
   /** Dados completos para aplicar no item (TMDB precisa de uma segunda chamada). */

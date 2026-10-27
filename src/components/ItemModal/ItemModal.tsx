@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, CalendarClock, Check, ChevronDown, ExternalLink, Heart, PenLine, Plus, RotateCcw, Search, Share2, Trash2, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { CAT_ORDER, CATS, DEF, GROUPS, NUM, PLATAFORMAS, SPEC, STATUS, TAGS_SUGERIDAS, blank, clean } from '../../data/catalog';
+import { CAT_ORDER, CATS, DEF, GROUPS, NUM, SPEC, STATUS, TAGS_SUGERIDAS, blank, clean } from '../../data/catalog';
 import { asDate, today } from '../../lib/dates';
 import { remaining } from '../../lib/progress';
 import { shareItem } from '../../services/shareImage';
@@ -34,8 +34,7 @@ const PROGRESS: Record<Categoria, [string, string][]> = {
   serie: [['temporadaAtual', 'Temporada'], ['episodioAtual', 'Último episódio visto']],
   anime: [['episodioAtual', 'Último episódio visto']],
   livro: [['paginaAtual', 'Página atual']],
-  hq: [['capituloAtual', 'Capítulo atual']],
-  jogo: [['horasJogadas', 'Horas jogadas']]
+  hq: [['capituloAtual', 'Capítulo atual']]
 };
 const STATUS_ORDER: Status[] = ['wishlist', 'consumindo', 'concluido', 'pausado', 'abandonado'];
 
@@ -71,8 +70,7 @@ function Sheet({ id, status }: { id: string | null; status?: Status }) {
   const applyMeta = (m: Record<string, any>) => {
     setD(p => {
       const n: Draft = { ...p };
-      for (const [k, v] of Object.entries(m)) { if (k === 'plataformas' || v === undefined || v === null || v === '') continue; n[k] = v; }
-      if (p.categoria === 'jogo' && Array.isArray(m.plataformas)) { const p1 = m.plataformas.find((x: string) => PLATAFORMAS.includes(x)); if (p1) n.plataforma = p1; }
+      for (const [k, v] of Object.entries(m)) { if (v === undefined || v === null || v === '') continue; n[k] = v; }
       return n;
     });
     setStep('form');
@@ -102,7 +100,7 @@ function Sheet({ id, status }: { id: string | null; status?: Status }) {
   const left = remaining(d);
   const progressFields = PROGRESS[d.categoria];
   const detailFields = SPEC[d.categoria].filter(([k]) => !progressFields.some(([p]) => p === k));
-  const subtitle = [C.label, d.ano || d.autor || d.diretor || d.plataforma || d.estudio].filter(Boolean).join(' · ');
+  const subtitle = [C.label, d.ano || d.autor || d.diretor || d.estudio].filter(Boolean).join(' · ');
   const tagCount = (d.generos?.length || 0) + (d.tags?.length || 0) + (d.listas?.length || 0);
 
   return (
@@ -161,7 +159,7 @@ function Sheet({ id, status }: { id: string | null; status?: Status }) {
               {/* bloco que muda com o status */}
               {d.status === 'wishlist' && (
                 <div className="blk">
-                  <span className="blk-l">Vontade de ver/jogar/ler</span>
+                  <span className="blk-l">Vontade de ver ou ler</span>
                   <div className="pills" role="radiogroup" aria-label="Prioridade">
                     {(['Alto', 'Médio', 'Baixo'] as const).map(p => <button key={p} type="button" role="radio" aria-checked={(d.prioridade || 'Médio') === p} className={`pill-s ${(d.prioridade || 'Médio') === p ? 'on' : ''}`} onClick={() => set('prioridade', p)}>{p === 'Alto' ? 'Muita' : p === 'Médio' ? 'Média' : 'Pouca'}</button>)}
                   </div>
@@ -206,12 +204,6 @@ function Sheet({ id, status }: { id: string | null; status?: Status }) {
                           : <input className="in" type={type} inputMode={type === 'number' ? 'numeric' : undefined} min={type === 'number' ? 0 : undefined} value={d[k] ?? ''} onChange={e => setField(k, e.target.value)} />}
                       </label>
                     ))}
-                    {d.categoria === 'jogo' && (
-                      <label className="fld"><span>Duração média (h)</span>
-                        <input className="in" type="number" min={0} inputMode="numeric" value={d.tempoEstimado?.normal ?? ''} placeholder="ex.: 40"
-                          onChange={e => set('tempoEstimado', { ...(d.tempoEstimado || { rapido: null, completo: null }), normal: e.target.value === '' ? null : Number(e.target.value) })} />
-                      </label>
-                    )}
                     {(d.status !== 'consumindo' && d.status !== 'pausado') && progressFields.map(([k, label]) => (
                       <label key={k} className="fld"><span>{label}</span><input className="in" type="number" min={0} inputMode="numeric" value={d[k] ?? ''} onChange={e => setField(k, e.target.value)} /></label>
                     ))}

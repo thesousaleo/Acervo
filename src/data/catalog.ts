@@ -5,22 +5,18 @@ export const CATS: Record<Categoria, { label: string; plural: string; verb: stri
   serie: { label: 'Série', plural: 'Séries', verb: 'Assistindo', color: '#F9A8D4', repetir: 'Revi hoje' },
   anime: { label: 'Anime', plural: 'Animes', verb: 'Assistindo', color: '#F0ABFC', repetir: 'Revi hoje' },
   livro: { label: 'Livro', plural: 'Livros', verb: 'Lendo', color: '#FBCB5A', repetir: 'Reli hoje' },
-  hq:    { label: 'Mangá/HQ', plural: 'Mangás e HQs', verb: 'Lendo', color: '#FCD9A0', repetir: 'Reli hoje' },
-  jogo:  { label: 'Jogo', plural: 'Jogos', verb: 'Jogando', color: '#A78BFA', repetir: 'Rejoguei hoje' }
+  hq:    { label: 'Mangá/HQ', plural: 'Mangás e HQs', verb: 'Lendo', color: '#FCD9A0', repetir: 'Reli hoje' }
 };
-export const CAT_ORDER: Categoria[] = ['filme', 'serie', 'anime', 'jogo', 'livro', 'hq'];
+export const CAT_ORDER: Categoria[] = ['filme', 'serie', 'anime', 'livro', 'hq'];
 
 export const GROUPS: Record<Universo, { label: string; short: string; cats: Categoria[]; color: string; def: Categoria; hello: string; search: string }> = {
   tela:   { label: 'Filmes & Séries', short: 'Filmes/Séries', cats: ['filme', 'serie', 'anime'], color: '#FB7185', def: 'filme', hello: 'O que está passando na sua tela.', search: 'Buscar filme, série, anime, diretor…' },
-  jogos:  { label: 'Jogos', short: 'Jogos', cats: ['jogo'], color: '#A78BFA', def: 'jogo', hello: 'No controle agora.', search: 'Buscar jogo ou plataforma…' },
   livros: { label: 'Livros', short: 'Livros', cats: ['livro', 'hq'], color: '#FBCB5A', def: 'livro', hello: 'Na cabeceira agora.', search: 'Buscar livro, mangá ou autor…' }
 };
-export const ORDER: Universo[] = ['tela', 'jogos', 'livros'];
+export const ORDER: Universo[] = ['tela', 'livros'];
 
 export const STATUS: Record<Status, string> = { consumindo: 'Consumindo', concluido: 'Concluído', wishlist: 'Na fila', pausado: 'Pausado', abandonado: 'Abandonado' };
 export const PRI: Record<string, number> = { Alto: 3, 'Médio': 2, Baixo: 1 };
-export const PLAT: Record<string, string> = { PS5: '#2563EB', PS4: '#1D4ED8', 'Xbox Series': '#15803D', 'Xbox One': '#166534', Switch: '#DC2626', 'Switch 2': '#B91C1C', PC: '#475569', Mobile: '#0891B2', Outro: '#6B7280' };
-export const PLATAFORMAS = ['PC', 'PS5', 'PS4', 'Xbox Series', 'Xbox One', 'Switch', 'Switch 2', 'Mobile', 'Outro'];
 export const TAGS_SUGERIDAS = ['leve', 'intenso', 'emocionante', 'engraçado', 'sombrio', 'reflexivo', 'aconchegante', 'ritmo rápido', 'ritmo lento', 'para rever'];
 
 type Spec = [key: string, label: string, type: 'text' | 'number' | string[]];
@@ -29,24 +25,28 @@ export const SPEC: Record<Categoria, Spec[]> = {
   serie: [['temporadaAtual', 'Temporada atual', 'number'], ['episodioAtual', 'Último episódio visto', 'number'], ['totalTemporadas', 'Total de temporadas', 'number'], ['streaming', 'Streaming', 'text']],
   anime: [['episodioAtual', 'Último episódio visto', 'number'], ['totalEpisodios', 'Total de episódios', 'number'], ['estudio', 'Estúdio', 'text'], ['streaming', 'Streaming', 'text']],
   livro: [['autor', 'Autor', 'text'], ['formato', 'Formato', ['Físico', 'Kindle/E-book', 'Audiobook']], ['paginaAtual', 'Página atual', 'number'], ['totalPaginas', 'Total de páginas', 'number']],
-  hq:    [['autor', 'Autor', 'text'], ['formato', 'Formato', ['Mangá', 'HQ', 'Webtoon']], ['capituloAtual', 'Capítulo atual', 'number'], ['totalCapitulos', 'Total de capítulos', 'number']],
-  jogo:  [['plataforma', 'Plataforma', PLATAFORMAS], ['horasJogadas', 'Horas jogadas', 'number'], ['nivelConclusao', 'Nível de conclusão', ['Jogando', 'História Principal', '100% / Platinado', 'New Game+']]]
+  hq:    [['autor', 'Autor', 'text'], ['formato', 'Formato', ['Mangá', 'HQ', 'Webtoon']], ['capituloAtual', 'Capítulo atual', 'number'], ['totalCapitulos', 'Total de capítulos', 'number']]
 };
 export const DEF: Record<Categoria, Record<string, any>> = {
   filme: { diretor: '', ano: null, duracaoMin: null, ondeAssistiu: 'Streaming' },
   serie: { temporadaAtual: 1, episodioAtual: 0, totalTemporadas: 1, streaming: '', temporadas: [], proximoEp: null, emExibicao: false },
   anime: { episodioAtual: 0, totalEpisodios: null, estudio: '', streaming: '', proximoEp: null, emExibicao: false },
   livro: { autor: '', formato: 'Físico', paginaAtual: 0, totalPaginas: null },
-  hq:    { autor: '', formato: 'Mangá', capituloAtual: 0, totalCapitulos: null },
-  jogo:  { plataforma: 'PC', horasJogadas: 0, nivelConclusao: 'Jogando', tempoEstimado: null }
+  hq:    { autor: '', formato: 'Mangá', capituloAtual: 0, totalCapitulos: null }
 };
 const COMMON = ['id', 'titulo', 'categoria', 'capaUrl', 'status', 'nota', 'favorito', 'dataInicio', 'dataConclusao', 'review', 'updatedAt', 'prioridade', 'deletedAt', 'generos', 'tags', 'listas', 'historicoRewatch', 'sessoes', 'ext', 'onde'];
 const OPTIONAL = new Set(['prioridade', 'deletedAt', 'ext', 'onde']);
 const ARRAYS = new Set(['generos', 'tags', 'listas', 'historicoRewatch', 'sessoes']);
-export const NUM = new Set(['nota', 'ano', 'duracaoMin', 'temporadaAtual', 'episodioAtual', 'totalTemporadas', 'totalEpisodios', 'paginaAtual', 'totalPaginas', 'capituloAtual', 'totalCapitulos', 'horasJogadas']);
+export const NUM = new Set(['nota', 'ano', 'duracaoMin', 'temporadaAtual', 'episodioAtual', 'totalTemporadas', 'totalEpisodios', 'paginaAtual', 'totalPaginas', 'capituloAtual', 'totalCapitulos']);
 
 export const uniOf = (it: { categoria: Categoria }): Universo =>
-  it.categoria === 'jogo' ? 'jogos' : (it.categoria === 'livro' || it.categoria === 'hq') ? 'livros' : 'tela';
+  (it.categoria === 'livro' || it.categoria === 'hq') ? 'livros' : 'tela';
+
+/** Jogos saíram do Acervo: qualquer jogo salvo vira marca de exclusão (some de todos os aparelhos, mas a linha fica no banco). */
+export const isGame = (it: { categoria: string }) => it.categoria === 'jogo';
+export function purgeGames<T extends { categoria: string; deletedAt?: number; updatedAt: number }>(list: T[]): T[] {
+  return list.map(it => isGame(it) && !it.deletedAt ? { ...it, deletedAt: Date.now(), updatedAt: Date.now() } : it);
+}
 
 export const uid = (): string =>
   (globalThis.crypto && 'randomUUID' in globalThis.crypto) ? globalThis.crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);

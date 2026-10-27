@@ -26,12 +26,10 @@ export function Retrospectiva() {
     const g = goalProgress(items, ano);
     const filmMin = items.filter(i => i.categoria === 'filme').reduce((a, i: any) => a + ((done.includes(i) ? 1 : 0) + (i.historicoRewatch || []).filter((d: string) => d.startsWith(ano)).length) * (+i.duracaoMin || 0), 0);
     const eps = items.reduce((a, i) => a + (i.sessoes || []).filter(s => s.data.startsWith(ano) && /^T\d+E\d+|^ep\./.test(s.acao)).length, 0);
-    const horasJogo = items.reduce((a, i) => a + (i.sessoes || []).filter(s => s.data.startsWith(ano) && s.acao.startsWith('+1 h')).length, 0)
-      + done.filter(i => i.categoria === 'jogo').reduce((a, i: any) => a + (+i.horasJogadas || 0), 0);
     const porMes = MESES.map((_, m) => {
       const k = `${ano}-${String(m + 1).padStart(2, '0')}`;
       const L = done.filter(i => i.dataConclusao.startsWith(k));
-      return { tela: L.filter(i => uniOf(i) === 'tela').length, jogos: L.filter(i => uniOf(i) === 'jogos').length, livros: L.filter(i => uniOf(i) === 'livros').length };
+      return { tela: L.filter(i => uniOf(i) === 'tela').length, livros: L.filter(i => uniOf(i) === 'livros').length };
     });
     const notas = [1, 2, 3, 4, 5].map(n => done.filter(i => i.nota > n - 1 && i.nota <= n).length);
     const gen = new Map<string, number>();
@@ -39,21 +37,18 @@ export function Retrospectiva() {
     const generos = [...gen.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
     const media = done.filter(i => i.nota).reduce((a, i, _, arr) => a + i.nota / arr.length, 0);
     const melhores = done.filter(i => i.nota >= 4.5).sort((a, b) => b.nota - a.nota).slice(0, 8);
-    return { done, g, filmMin, eps, horasJogo, porMes, notas, generos, media, melhores };
+    return { done, g, filmMin, eps, porMes, notas, generos, media, melhores };
   }, [items, ano]);
 
-  const maxMes = Math.max(1, ...R.porMes.map(m => m.tela + m.jogos + m.livros));
+  const maxMes = Math.max(1, ...R.porMes.map(m => m.tela + m.livros));
   const maxNota = Math.max(1, ...R.notas);
   const maxGen = Math.max(1, ...R.generos.map(g => g[1]));
   const figs: [string, string][] = [
     [String(R.done.length), 'concluídos'],
     [String(R.g.filmes), 'sessões de filme'],
     [`${Math.round(R.filmMin / 60)} h`, 'de filme'],
-    [String(R.eps), 'episódios registrados'],
     [String(R.g.livros), 'livros e mangás'],
     [R.g.paginas.toLocaleString('pt-BR'), 'páginas'],
-    [String(R.g.jogos), 'jogos zerados'],
-    [`${R.horasJogo} h`, 'de jogo'],
     [R.media ? R.media.toFixed(1).replace('.', ',') : '—', 'nota média']
   ];
   const share = async () => {
@@ -78,13 +73,12 @@ export function Retrospectiva() {
       <h2 className="sh">Mês a mês</h2>
       <div className="bars" role="img" aria-label="Concluídos por mês">
         {R.porMes.map((m, i) => {
-          const t = m.tela + m.jogos + m.livros;
+          const t = m.tela + m.livros;
           return (
             <div key={i} className="bar-col" title={`${MESES[i]}: ${t}`}>
               <span className="bar-n">{t || ''}</span>
               <div className="bar-stack" style={{ height: `${Math.max(2, t / maxMes * 130)}px` }}>
                 {m.livros > 0 && <i style={{ flex: m.livros, background: 'var(--c-livros)' }} />}
-                {m.jogos > 0 && <i style={{ flex: m.jogos, background: 'var(--c-jogos)' }} />}
                 {m.tela > 0 && <i style={{ flex: m.tela, background: 'var(--c-tela)' }} />}
               </div>
               <span className="bar-l">{MESES[i]}</span>
@@ -92,7 +86,7 @@ export function Retrospectiva() {
           );
         })}
       </div>
-      <p className="legend"><i style={{ background: 'var(--c-tela)' }} />Filmes & Séries <i style={{ background: 'var(--c-jogos)' }} />Jogos <i style={{ background: 'var(--c-livros)' }} />Livros</p>
+      <p className="legend"><i style={{ background: 'var(--c-tela)' }} />Filmes & Séries <i style={{ background: 'var(--c-livros)' }} />Livros</p>
 
       <div className="retro-2">
         <section>

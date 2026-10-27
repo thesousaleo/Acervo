@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { meta, type MetaHit } from '../../services/meta';
 import type { Categoria } from '../../types/media';
 
-const PH: Record<Categoria, string> = { filme: 'Nome do filme', serie: 'Nome da série', anime: 'Nome do anime', livro: 'Título do livro ou autor', hq: 'Nome do mangá ou HQ', jogo: 'Nome do jogo' };
+const PH: Record<Categoria, string> = { filme: 'Nome do filme', serie: 'Nome da série', anime: 'Nome do anime', livro: 'Título do livro ou autor', hq: 'Nome do mangá ou HQ' };
 
 /** Busca online: digita, escolhe um resultado e o item já vem preenchido. */
 export function MetaSearch({ cat, initial, onPick, autoFocus }: { cat: Categoria; initial: string; onPick: (dados: Record<string, any>) => void; autoFocus?: boolean }) {

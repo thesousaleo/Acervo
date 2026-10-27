@@ -21,7 +21,7 @@ const SORT_L: Record<Sort, string> = { recentes: 'Recentes', nota: 'Maior nota',
 const FILTERS: [string, string][] = [['todos', 'Tudo'], ['concluido', 'Concluídos'], ['consumindo', 'Em andamento'], ['pausado', 'Pausados'], ['abandonado', 'Abandonados'], ['fav', 'Favoritos']];
 const FILA_VISIVEL = 5;
 
-/** Página de uma área (Filmes & Séries, Jogos ou Livros). */
+/** Página de uma área (Filmes & Séries ou Livros). */
 export function Area({ u }: { u: Universo }) {
   const { items } = useLibrary();
   const [q, setQ] = useState('');
@@ -48,7 +48,7 @@ export function Area({ u }: { u: Universo }) {
     && (!nq || norm(it.titulo + ' ' + sub(it)).includes(nq))).sort(SORTS[sort]);
   const ativos = [f !== 'todos', cat !== 'todas', !!tag, !!lista, sort !== 'recentes'].filter(Boolean).length;
   const limpar = () => { setF('todos'); setCat('todas'); setTag(''); setLista(''); setSort('recentes'); };
-  const nowLabel = u === 'tela' ? 'Assistindo' : u === 'jogos' ? 'Jogando' : 'Lendo';
+  const nowLabel = u === 'tela' ? 'Assistindo' : 'Lendo';
 
   return (
     <>

@@ -7,7 +7,6 @@ import { GROUP_ICON } from './icons';
 const TABS: [Tab, string, string, any, string][] = [
   ['inicio', 'Início', 'Início', House, 'var(--fg)'],
   ['tela', GROUPS.tela.label, 'Filmes', GROUP_ICON.tela, GROUPS.tela.color],
-  ['jogos', 'Jogos', 'Jogos', GROUP_ICON.jogos, GROUPS.jogos.color],
   ['livros', 'Livros', 'Livros', GROUP_ICON.livros, GROUPS.livros.color],
   ['diario', 'Diário', 'Diário', CalendarDays, 'var(--fg)']
 ];

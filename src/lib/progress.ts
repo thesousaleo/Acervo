@@ -9,7 +9,6 @@ export function sub(it: any): string {
     case 'anime': return [it.estudio, it.totalEpisodios ? `${it.totalEpisodios} ep.` : ''].filter(Boolean).join(' · ');
     case 'livro': return [it.autor, it.formato].filter(Boolean).join(' · ');
     case 'hq':    return [it.autor, it.formato].filter(Boolean).join(' · ');
-    case 'jogo':  return [it.plataforma, it.status === 'wishlist' ? '' : it.nivelConclusao].filter(Boolean).join(' · ');
   }
   return '';
 }
@@ -37,10 +36,6 @@ export function progress(it: any): { pct: number | null; l: string; r: string } 
     case 'anime': { const e = +it.episodioAtual || 0, t = +it.totalEpisodios || 0; return { pct: t ? Math.min(100, e / t * 100) : null, l: `ep. ${e}${t ? ' / ' + t : ''}`, r: t ? Math.round(e / t * 100) + '%' : '' }; }
     case 'livro': { const p = +it.paginaAtual || 0, t = +it.totalPaginas || 0; return { pct: t ? Math.min(100, p / t * 100) : 0, l: `pág. ${p}${t ? ' / ' + t : ''}`, r: t ? Math.round(p / t * 100) + '%' : '' }; }
     case 'hq':    { const p = +it.capituloAtual || 0, t = +it.totalCapitulos || 0; return { pct: t ? Math.min(100, p / t * 100) : null, l: `cap. ${p}${t ? ' / ' + t : ''}`, r: t ? Math.round(p / t * 100) + '%' : '' }; }
-    case 'jogo': {
-      const h = +it.horasJogadas || 0, n = it.tempoEstimado?.normal;
-      return { pct: n ? Math.min(100, h / n * 100) : null, l: `${h} h jogadas`, r: n ? `~${n} h no total` : (it.nivelConclusao || '') };
-    }
   }
   return { pct: null, l: it.duracaoMin ? `${it.duracaoMin} min` : '', r: it.ondeAssistiu || '' };
 }
@@ -53,7 +48,6 @@ export function remaining(it: any): string {
   switch (it.categoria) {
     case 'serie': { const c = serieCount(it); return c ? (c.total - c.visto > 0 ? `faltam ${c.total - c.visto} episódios` : 'em dia') : ''; }
     case 'anime': { const t = +it.totalEpisodios || 0, e = +it.episodioAtual || 0; return t ? (t - e > 0 ? `faltam ${t - e} episódios` : 'em dia') : ''; }
-    case 'jogo': { const n = it.tempoEstimado?.normal, h = +it.horasJogadas || 0; return n ? (n - h > 0 ? `faltam ~${Math.round(n - h)} h (média da história)` : 'já passou da média da história') : ''; }
     case 'livro': case 'hq': {
       const isL = it.categoria === 'livro';
       const cur = +(isL ? it.paginaAtual : it.capituloAtual) || 0, tot = +(isL ? it.totalPaginas : it.totalCapitulos) || 0;
@@ -88,13 +82,6 @@ export function uStats(items: MediaItem[], u: Universo): UStats {
     const min = films.reduce((a, i) => a + ((inY(i) ? 1 : 0) + rwY(i)) * (+i.duracaoMin || 0), 0);
     return { now, nowLabel: 'Assistindo agora', foot: `${filmsY} sessões de filme e ${seriesY} ${seriesY === 1 ? 'série concluída' : 'séries concluídas'} em ${y}`,
       stats: [[now, '', 'Assistindo agora'], [filmsY, '', `Sessões de filme em ${y}`], [seriesY, '', `Séries/animes concluídos em ${y}`], [Math.round(min / 60), 'h', `De filme em ${y}`]] };
-  }
-  if (u === 'jogos') {
-    const hours = L.reduce((a, i) => a + (+i.horasJogadas || 0), 0);
-    const plat = L.filter(i => i.nivelConclusao === '100% / Platinado').length;
-    const zer = L.filter(inY).length;
-    return { now, nowLabel: 'Jogando agora', foot: `${zer} ${zer === 1 ? 'zerado' : 'zerados'} em ${y} · ${hours} h no total`,
-      stats: [[now, '', 'Jogando agora'], [zer, '', `Zerados em ${y}`], [hours, 'h', 'Horas jogadas'], [plat, '', 'Platinados / 100%']] };
   }
   const pages = L.filter(i => i.categoria === 'livro').reduce((a, i) => a + (+i.paginaAtual || 0), 0);
   const lidos = L.filter(inY).length;

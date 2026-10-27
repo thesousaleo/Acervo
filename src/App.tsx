@@ -12,7 +12,6 @@ import { useLibrary } from './store/useLibrary';
 const PAGES = {
   inicio: Inicio,
   tela: () => <Area u="tela" />,
-  jogos: () => <Area u="jogos" />,
   livros: () => <Area u="livros" />,
   diario: Diario,
   backup: Backup

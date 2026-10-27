@@ -46,7 +46,7 @@ async function itemCard(it: MediaItem, withImage: boolean): Promise<Blob> {
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const ctx = c.getContext('2d')!; const col = CATS[it.categoria].color;
   bg(ctx, col);
-  const cw = 420, ch = it.categoria === 'jogo' ? 560 : 630, cx = 80, cy = 120;
+  const cw = 420, ch = 630, cx = 80, cy = 120;
   const img = withImage ? await loadImg(it.capaUrl) : null;
   ctx.save(); ctx.beginPath(); (ctx as any).roundRect ? (ctx as any).roundRect(cx, cy, cw, ch, 28) : ctx.rect(cx, cy, cw, ch); ctx.clip();
   if (img) { const r = Math.max(cw / img.width, ch / img.height); ctx.drawImage(img, cx + (cw - img.width * r) / 2, cy + (ch - img.height * r) / 2, img.width * r, img.height * r); }

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { Config, MediaItem, Status, UniversoFiltro } from '../types/media';
 import { storage, type Prefs } from '../services/storage';
 import { seed } from '../data/seed';
-import { GROUPS, uniOf } from '../data/catalog';
+import { GROUPS, purgeGames, uniOf } from '../data/catalog';
 import { today } from '../lib/dates';
 import { merge } from '../services/backup';
 import { cloud } from '../services/sync/supabaseSync';
@@ -10,7 +10,7 @@ import { auth, type Session } from '../services/auth';
 import { meta } from '../services/meta';
 import { scheduleAll } from '../services/notify';
 
-export type Tab = 'inicio' | 'tela' | 'jogos' | 'livros' | 'diario' | 'backup';
+export type Tab = 'inicio' | 'tela' | 'livros' | 'diario' | 'backup';
 export type SyncState = { status: 'off' | 'syncing' | 'ok' | 'error'; at?: number; error?: string };
 export type ToastMsg = { id: number; text: string; action?: { label: string; run: () => void } };
 
@@ -59,7 +59,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const fromSync = useRef(false);
   const busy = useRef(false);
 
-  const items = useMemo(() => all.filter(i => !i.deletedAt), [all]);
+  const items = useMemo(() => all.filter(i => !i.deletedAt && (i.categoria as string) !== 'jogo'), [all]);
 
   useEffect(() => { storage.saveItems(all); }, [all]);
   useEffect(() => { storage.saveConfig(config); }, [config]);
@@ -80,7 +80,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     busy.current = true; setSync(s => ({ ...s, status: 'syncing' }));
     try {
       const remote = await cloud.pull();
-      const merged = merge(allRef.current, remote);
+      const merged = purgeGames(merge(allRef.current, remote));
       const rmap = new Map(remote.map(r => [r.id, r.updatedAt || 0]));
       const changed = merged.filter(m => (rmap.get(m.id) ?? -1) < (m.updatedAt || 0));
       await cloud.push(changed);
@@ -192,7 +192,6 @@ export function useQuickActions() {
       else it.episodioAtual = e;
       log(it, `T${it.temporadaAtual}E${it.episodioAtual}`);
     }, '+1 episódio', note(id)),
-    hour: (id: string) => update(id, it => { it.horasJogadas = (+it.horasJogadas || 0) + 1; log(it, `+1 h (${it.horasJogadas} h)`); }, '+1 hora registrada', note(id)),
     page: (id: string, v: number) => update(id, it => {
       const isL = it.categoria === 'livro';
       const key = isL ? 'paginaAtual' : 'capituloAtual', tot = isL ? it.totalPaginas : it.totalCapitulos;
@@ -205,7 +204,6 @@ export function useQuickActions() {
       if (it.categoria === 'livro' && it.totalPaginas) it.paginaAtual = it.totalPaginas;
       if (it.categoria === 'hq' && it.totalCapitulos) it.capituloAtual = it.totalCapitulos;
       if (it.categoria === 'anime' && it.totalEpisodios) it.episodioAtual = it.totalEpisodios;
-      if (it.categoria === 'jogo' && it.nivelConclusao === 'Jogando') it.nivelConclusao = 'História Principal';
       log(it, 'concluído');
     }, 'Concluído hoje · está no Diário'),
     start: (id: string) => update(id, it => { it.status = 'consumindo'; it.dataInicio = today(); delete it.prioridade; log(it, 'começou'); }, 'Movido para em andamento')

@@ -11,9 +11,8 @@ type Tempo = 'pouco' | 'noite' | 'fds';
 const TEMPOS: [Tempo, string][] = [['pouco', 'Até 1 hora'], ['noite', 'Uma noite'], ['fds', 'Fim de semana']];
 
 function peso(it: any, t: Tempo): number {
-  const longo = it.categoria === 'jogo' || (it.categoria === 'filme' && (+it.duracaoMin || 120) > 100);
+  const longo = it.categoria === 'filme' && (+it.duracaoMin || 120) > 100;
   if (t === 'pouco' && it.categoria === 'filme') return 0;
-  if (t === 'pouco' && it.categoria === 'jogo' && it.status === 'wishlist') return 0;
   let w = it.status === 'consumindo' ? 4 : it.status === 'pausado' ? 1.5 : PRI[it.prioridade || 'Médio'];
   if (t === 'fds' && longo) w *= 1.8;
   if (t === 'noite' && it.categoria === 'filme') w *= 1.5;

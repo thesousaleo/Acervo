@@ -1,6 +1,6 @@
 # Acervo
 
-Repositório pessoal de **filmes, séries, jogos e livros**, com visual *Liquid Glass*.
+Repositório pessoal de **filmes, séries, animes, livros e mangás**, com visual *Liquid Glass*.
 Roda na Web (GitHub Pages) e como app Android (APK via Capacitor).
 
 - **Web:** https://thesousaleo.github.io/Acervo/
@@ -8,15 +8,15 @@ Roda na Web (GitHub Pages) e como app Android (APK via Capacitor).
 
 ## O que tem
 
-Um menu só, na parte de baixo: **Início · Filmes/Séries · Jogos · Livros · Diário**, com o botão **+** flutuante ao lado para adicionar. Conta e dados ficam no avatar do Início.
+Um menu só, na parte de baixo: **Início · Filmes/Séries · Livros · Diário**, com o botão **+** flutuante ao lado para adicionar. Conta e dados ficam no avatar do Início.
 
-- **Tipos:** filmes, séries, animes, jogos, livros e mangás/HQs.
-- **Busca automática** ao cadastrar: capa, ano, diretor/autor, gêneros, páginas, episódios por temporada e tempo médio de jogo
-  (TMDB para filmes e séries, AniList para anime e mangá, Google Livros/Open Library para livros, IGDB para jogos).
+- **Tipos:** filmes, séries, animes, livros e mangás/HQs.
+- **Busca automática** ao cadastrar: capa, ano, diretor/autor, gêneros, páginas e episódios por temporada
+  (TMDB para filmes e séries, AniList para anime e mangá, Google Livros/Open Library para livros).
 - **Onde assistir** no Brasil (dados do JustWatch via TMDB) e **próximos episódios** de séries e animes, atualizados sozinhos.
-- **Quanto falta:** episódios restantes, horas até a média da história e previsão de término da leitura no seu ritmo.
-- **Atalhos na capa:** `+1 ep`, `página`, `capítulo`, `+1 h` e ✓ concluir; cada um vira uma sessão no histórico, com anotação opcional.
-- **Status:** em andamento, na fila (com hype), pausado, abandonado e concluído; rever/reler/rejogar com datas.
+- **Quanto falta:** episódios restantes e previsão de término da leitura no seu ritmo.
+- **Atalhos na capa:** `+1 ep`, `página`, `capítulo` e ✓ concluir; cada um vira uma sessão no histórico, com anotação opcional.
+- **Status:** em andamento, na fila (com hype), pausado, abandonado e concluído; rever/reler com datas.
 - **Tags, gêneros e listas** próprias, com filtros na estante.
 - **O que eu faço agora?** sorteia algo da sua lista pelo tempo disponível.
 - **Diário + Retrospectiva:** linha do tempo, números do ano, mês a mês, notas, gêneros favoritos, melhores do ano e **metas anuais**.
@@ -82,8 +82,8 @@ O app usa o projeto Supabase definido em `src/services/supabase.ts` (URL + chave
 Os dados ficam protegidos por login e RLS: cada usuário só lê e grava as próprias linhas.
 
 - Tabelas: `acervo_user_items (user_id, id, data, updated_at)` e `acervo_config (user_id, data, updated_at)`.
-- Edge Function `meta` (código em `supabase/functions/meta`): busca no TMDB e no IGDB sem expor as chaves.
-  Segredos necessários em *Edge Functions → Secrets*: `TMDB_TOKEN`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`.
+- Edge Function `meta` (código em `supabase/functions/meta`): busca no TMDB sem expor a chave.
+  Segredo necessário em *Edge Functions → Secrets*: `TMDB_TOKEN`.
 - AniList, Google Livros e Open Library são chamados direto do app (não precisam de chave).
 
 ## Estrutura
@@ -94,7 +94,7 @@ src/
 ├── components/             Cover, Stars, Dock (menu + botão +), Goals, Upcoming, PickSheet, NoteSheet, items/, ItemModal/
 ├── data/                   catalog.ts (categorias, universos, campos) · seed.ts
 ├── lib/                    datas, progresso e estatísticas
-├── pages/                  Inicio, Area (Filmes/Séries, Jogos, Livros), Diario, Retrospectiva, Backup (conta e dados)
+├── pages/                  Inicio, Area (Filmes/Séries, Livros), Diario, Retrospectiva, Backup (conta e dados)
 ├── services/               auth, sync/, meta (busca), importers (CSV), notify, shareImage, storage, backup, platform
 ├── store/useLibrary.tsx    estado global e ações rápidas
 └── styles/liquid.css       design system Liquid Glass

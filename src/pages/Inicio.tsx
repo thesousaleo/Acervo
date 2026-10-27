@@ -21,7 +21,7 @@ export function Inicio() {
   const up = upcomingOf(items, 14).slice(0, 3);
   const [first, ...rest] = now;
   const ano = yearNow(), m = metasDo(config, ano);
-  const temMetas = ['filmes', 'series', 'livros', 'jogos', 'paginas'].some(k => (m as any)[k]);
+  const temMetas = ['filmes', 'series', 'livros', 'paginas'].some(k => (m as any)[k]);
   const inicial = session?.user.email?.charAt(0).toUpperCase();
   return (
     <>

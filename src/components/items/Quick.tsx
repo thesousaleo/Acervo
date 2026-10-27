@@ -1,4 +1,4 @@
-import { Book, BookOpen, Clock, Plus } from 'lucide-react';
+import { Book, BookOpen, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useLibrary, useQuickActions } from '../../store/useLibrary';
 import type { MediaItem } from '../../types/media';
@@ -11,7 +11,6 @@ export function QuickBtn({ it, className = 'qbtn' }: { it: MediaItem; className?
     case 'serie': case 'anime': return <button className={className} onClick={() => q.ep(it.id)} aria-label="Mais um episódio"><Plus className="i" aria-hidden /><span>1 ep</span></button>;
     case 'livro': return <button className={className} onClick={() => setPageEdit(pageEdit === it.id ? null : it.id)} aria-label="Atualizar página"><Book className="i" aria-hidden /><span>página</span></button>;
     case 'hq': return <button className={className} onClick={() => setPageEdit(pageEdit === it.id ? null : it.id)} aria-label="Atualizar capítulo"><BookOpen className="i" aria-hidden /><span>capítulo</span></button>;
-    case 'jogo': return <button className={className} onClick={() => q.hour(it.id)} aria-label="Mais uma hora"><Clock className="i" aria-hidden /><span>+1 h</span></button>;
   }
   return null;
 }

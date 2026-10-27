@@ -1,5 +1,5 @@
 // Edge Function "meta": busca de metadados para o Acervo.
-// Segredos: TMDB_TOKEN (Read Access Token ou API key v3), TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET.
+// Segredo: TMDB_TOKEN (Read Access Token ou API key v3).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const CORS = {
@@ -65,50 +65,14 @@ async function tmdbDetails(id: string, type: "movie" | "tv") {
   };
 }
 
-/* ---------------- IGDB ---------------- */
-let twitch: { token: string; exp: number } | null = null;
-async function igdb(endpoint: string, body: string) {
-  const id = Deno.env.get("TWITCH_CLIENT_ID"), secret = Deno.env.get("TWITCH_CLIENT_SECRET");
-  if (!id || !secret) throw new Error("TWITCH_CLIENT_ID/TWITCH_CLIENT_SECRET não configurados no Supabase.");
-  if (!twitch || Date.now() > twitch.exp) {
-    const r = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${id}&client_secret=${secret}&grant_type=client_credentials`, { method: "POST" });
-    if (!r.ok) throw new Error(`Twitch ${r.status}`);
-    const t = await r.json();
-    twitch = { token: t.access_token, exp: Date.now() + (t.expires_in - 600) * 1000 };
-  }
-  const r = await fetch(`https://api.igdb.com/v4/${endpoint}`, { method: "POST", headers: { "Client-ID": id, Authorization: `Bearer ${twitch.token}`, accept: "application/json" }, body });
-  if (!r.ok) throw new Error(`IGDB ${r.status}`);
-  return r.json();
-}
-const PLAT_MAP: Record<string, string> = { "PlayStation 5": "PS5", "PlayStation 4": "PS4", "Xbox Series X|S": "Xbox Series", "Nintendo Switch": "Switch", "Nintendo Switch 2": "Switch 2", "PC (Microsoft Windows)": "PC", "Android": "Mobile", "iOS": "Mobile", "Xbox One": "Xbox One", "Mac": "PC", "Linux": "PC" };
-async function igdbSearch(q: string) {
-  const safe = q.replace(/"/g, "");
-  const games = await igdb("games", `search "${safe}"; fields name,first_release_date,cover.image_id,platforms.name,genres.name,summary; where version_parent = null; limit 10;`);
-  const ids = games.map((g: any) => g.id);
-  let ttb: any[] = [];
-  if (ids.length) { try { ttb = await igdb("game_time_to_beats", `fields game_id,hastily,normally,completely; where game_id = (${ids.join(",")}); limit 10;`); } catch { ttb = []; } }
-  return games.map((g: any) => {
-    const t = ttb.find((x: any) => x.game_id === g.id);
-    const plats = [...new Set((g.platforms || []).map((p: any) => PLAT_MAP[p.name] || p.name))];
-    return {
-      fonte: "igdb", tipo: "game", extId: String(g.id), titulo: g.name,
-      ano: g.first_release_date ? new Date(g.first_release_date * 1000).getUTCFullYear() : null,
-      capa: g.cover?.image_id ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.cover.image_id}.jpg` : "",
-      plataformas: plats, generos: (g.genres || []).map((x: any) => x.name), resumo: g.summary || "",
-      tempo: t ? { rapido: t.hastily ? Math.round(t.hastily / 3600) : null, normal: t.normally ? Math.round(t.normally / 3600) : null, completo: t.completely ? Math.round(t.completely / 3600) : null } : null,
-    };
-  });
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
     const { action, q, id, type } = await req.json();
     switch (action) {
-      case "status": return json({ tmdb: !!Deno.env.get("TMDB_TOKEN"), igdb: !!(Deno.env.get("TWITCH_CLIENT_ID") && Deno.env.get("TWITCH_CLIENT_SECRET")) });
+      case "status": return json({ tmdb: !!Deno.env.get("TMDB_TOKEN") });
       case "tmdb.search": return json(await tmdbSearch(String(q || ""), type === "tv" ? "tv" : "movie"));
       case "tmdb.details": return json(await tmdbDetails(String(id), type === "tv" ? "tv" : "movie"));
-      case "igdb.search": return json(await igdbSearch(String(q || "")));
       default: return json({ error: "ação desconhecida" }, 400);
     }
   } catch (e) {
